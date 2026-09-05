@@ -1,43 +1,47 @@
 import pytest
 from backend.agents.retention_profiler import (
     RetentionProfilingPayload,
-    SeriesItem,
+    SARTTestResult,
+    DigitSpanTestResult,
+    DelayedRecallTestResult,
     ReelClipWatch,
-    FocusTaskSubmission,
-    DistractionTestResult,
+    SeriesItem,
     SelfReportData,
     retention_profiler_agent
 )
 
 
 def test_high_focus_vs_low_focus_scoring():
-    """Validates that the scoring function clearly differentiates high vs low retention behaviors."""
+    """Validates that SART, Digit Span, Delayed Recall, and Reels clearly differentiate focus levels."""
     
     # 1. High-Focus Synthetic Profile
     high_payload = RetentionProfilingPayload(
         student_name="Aarav Sharma",
         grade_level="engineering",
-        series_habits=[
-            SeriesItem(title="Breaking Bad", status="completed"),
-            SeriesItem(title="Dark", status="completed"),
-            SeriesItem(title="Chernobyl", status="completed")
-        ],
+        sart_test=SARTTestResult(
+            total_trials=18,
+            commission_errors=0,
+            omission_errors=0,
+            average_reaction_time_ms=420.0
+        ),
+        digit_span_test=DigitSpanTestResult(
+            max_span_capacity=8,
+            working_memory_score=1.0
+        ),
+        delayed_recall_test=DelayedRecallTestResult(
+            total_target_words=8,
+            correct_recalled_count=8,
+            recall_score=1.0
+        ),
         reel_watches=[
             ReelClipWatch(clip_id="c1", title="Memory Hack", clip_type="short", duration_seconds=15, watched_seconds=15, completion_status="full"),
             ReelClipWatch(clip_id="c2", title="Transformer Attention", clip_type="medium", duration_seconds=30, watched_seconds=30, completion_status="full"),
-            ReelClipWatch(clip_id="c3", title="Distributed Consensus", clip_type="long", duration_seconds=60, watched_seconds=58, completion_status="full")
+            ReelClipWatch(clip_id="c3", title="Distributed Consensus", clip_type="long", duration_seconds=45, watched_seconds=45, completion_status="full")
         ],
-        youtube_watch={"video_id": "yt1", "duration_seconds": 180, "watched_seconds": 180, "status": "full", "tab_switches_during_video": 0},
-        focus_task=FocusTaskSubmission(
-            total_time_seconds=320,
-            tab_switch_count=0,
-            unfocused_duration_seconds=0,
-            answered_correctly=2,
-            total_questions=2
-        ),
-        distraction_test=DistractionTestResult(
-            reaction_delay_seconds=2.0  # Fast recovery
-        ),
+        series_habits=[
+            SeriesItem(title="Breaking Bad", status="completed"),
+            SeriesItem(title="Dark", status="completed")
+        ],
         self_report=SelfReportData(
             longest_session_minutes=90,
             typical_break_frequency_minutes=60,
@@ -54,27 +58,28 @@ def test_high_focus_vs_low_focus_scoring():
     low_payload = RetentionProfilingPayload(
         student_name="Rahul V",
         grade_level="10th",
-        series_habits=[
-            SeriesItem(title="Stranger Things", status="dropped"),
-            SeriesItem(title="One Piece", status="dropped"),
-            SeriesItem(title="Lupin", status="dropped")
-        ],
+        sart_test=SARTTestResult(
+            total_trials=18,
+            commission_errors=4,  # Failed all No-Go 3s
+            omission_errors=6,    # Missed many Go targets
+            average_reaction_time_ms=680.0
+        ),
+        digit_span_test=DigitSpanTestResult(
+            max_span_capacity=3,
+            working_memory_score=0.20
+        ),
+        delayed_recall_test=DelayedRecallTestResult(
+            total_target_words=8,
+            correct_recalled_count=1,
+            recall_score=0.125
+        ),
         reel_watches=[
             ReelClipWatch(clip_id="c1", title="Memory Hack", clip_type="short", duration_seconds=15, watched_seconds=3, completion_status="dropped", skipped=True),
-            ReelClipWatch(clip_id="c2", title="Transformer Attention", clip_type="medium", duration_seconds=30, watched_seconds=6, completion_status="dropped", skipped=True),
-            ReelClipWatch(clip_id="c3", title="Distributed Consensus", clip_type="long", duration_seconds=60, watched_seconds=10, completion_status="dropped", skipped=True)
+            ReelClipWatch(clip_id="c2", title="Transformer Attention", clip_type="medium", duration_seconds=30, watched_seconds=5, completion_status="dropped", skipped=True)
         ],
-        youtube_watch={"video_id": "yt1", "duration_seconds": 180, "watched_seconds": 25, "status": "dropped", "tab_switches_during_video": 3},
-        focus_task=FocusTaskSubmission(
-            total_time_seconds=120,
-            tab_switch_count=4,  # Frequent tab switching
-            unfocused_duration_seconds=45.0,
-            answered_correctly=0,
-            total_questions=2
-        ),
-        distraction_test=DistractionTestResult(
-            reaction_delay_seconds=35.0  # Lingered on distraction
-        ),
+        series_habits=[
+            SeriesItem(title="Stranger Things", status="dropped")
+        ],
         self_report=SelfReportData(
             longest_session_minutes=20,
             typical_break_frequency_minutes=15,
@@ -87,7 +92,7 @@ def test_high_focus_vs_low_focus_scoring():
     assert low_result["break_interval_minutes"] == 20
     assert low_result["focus_tier"] == "Micro-Focus Recovery"
 
-    # Clear separation
+    # Clear empirical separation
     assert high_result["retention_score"] - low_result["retention_score"] > 0.45
 
 
@@ -96,39 +101,37 @@ def test_student_onboarding_api_flow(client):
     payload = {
         "student_name": "Priya Patel",
         "grade_level": "12th",
-        "series_habits": [
-            {"title": "Money Heist", "status": "completed"},
-            {"title": "Friends", "status": "partially_completed"}
-        ],
+        "sart_test": {
+            "total_trials": 18,
+            "commission_errors": 0,
+            "omission_errors": 1,
+            "no_go_count": 4,
+            "go_count": 14,
+            "average_reaction_time_ms": 410.0,
+            "sart_score": 0.95
+        },
+        "digit_span_test": {
+            "max_span_capacity": 7,
+            "working_memory_score": 0.85,
+            "levels_attempted": 5
+        },
+        "delayed_recall_test": {
+            "total_target_words": 8,
+            "correct_recalled_count": 7,
+            "intrusions_count": 0,
+            "recall_score": 0.875
+        },
         "reel_watches": [
-            {"clip_id": "c1", "title": "Memory Hack", "clip_type": "short", "duration_seconds": 15, "watched_seconds": 14, "completion_status": "full", "skipped": False},
-            {"clip_id": "c2", "title": "Transformer Attention", "clip_type": "medium", "duration_seconds": 30, "watched_seconds": 16, "completion_status": "halfway", "skipped": False}
+            {"clip_id": "c1", "title": "Memory Hack", "clip_type": "short", "duration_seconds": 15, "watched_seconds": 15, "completion_status": "full", "skipped": False},
+            {"clip_id": "c2", "title": "Transformer Attention", "clip_type": "medium", "duration_seconds": 30, "watched_seconds": 25, "completion_status": "halfway", "skipped": False}
         ],
-        "youtube_watch": {
-            "video_id": "yt1",
-            "video_title": "How Memory and Attention Work in Learning",
-            "duration_seconds": 180,
-            "watched_seconds": 140,
-            "tab_switches_during_video": 1,
-            "completed_ratio": 0.77,
-            "status": "halfway"
-        },
-        "focus_task": {
-            "passage_id": "quantum_computing_intro",
-            "total_time_seconds": 260,
-            "tab_switch_count": 1,
-            "unfocused_duration_seconds": 4.0,
-            "answered_correctly": 2,
-            "total_questions": 2
-        },
-        "distraction_test": {
-            "distraction_type": "urgent_notification",
-            "reaction_delay_seconds": 5.0
-        },
+        "series_habits": [
+            {"title": "Money Heist", "status": "completed"}
+        ],
         "self_report": {
-            "longest_session_minutes": 50,
+            "longest_session_minutes": 60,
             "typical_break_frequency_minutes": 45,
-            "preferred_study_time": "evening"
+            "preferred_study_time": "morning"
         }
     }
 

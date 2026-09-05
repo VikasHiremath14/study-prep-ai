@@ -21,7 +21,7 @@ def test_health_check_endpoint(client):
     assert data["agents"]["retention_profiler"] == "ready"
     assert data["agents"]["scheduler"] == "ready"
     assert data["agents"]["reader_rag"] == "ready"
-    assert data["agents"]["orchestrator"] == "ready"
+    assert data["agents"]["quiz_generator"] == "ready"
 
 
 def test_api_health_route(client):

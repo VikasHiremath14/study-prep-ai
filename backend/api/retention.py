@@ -13,7 +13,7 @@ router = APIRouter(prefix="/students", tags=["Students & Retention"])
 
 @router.post("/onboard")
 def onboard_student(payload: RetentionProfilingPayload, db: Session = Depends(get_db)):
-    """Runs the 5-signal retention profiler agent and stores student profile."""
+    """Runs the SART + Digit Span + Delayed Recall + Reels retention profiler and stores student profile."""
     # 1. Create student record
     student = Student(
         name=payload.student_name,
@@ -30,11 +30,11 @@ def onboard_student(payload: RetentionProfilingPayload, db: Session = Depends(ge
         student_id=student.id,
         retention_score=profile_result["retention_score"],
         break_interval_minutes=profile_result["break_interval_minutes"],
-        series_completion_score=profile_result["signals"]["series_completion"]["score"],
-        reel_watch_score=profile_result["signals"]["instagram_reels"]["score"],
-        sustained_focus_score=profile_result["signals"]["sustained_focus"]["score"],
+        series_completion_score=profile_result["signals"]["series_completion_habit"]["score"],
+        reel_watch_score=profile_result["signals"]["instagram_reels_tolerance"]["score"],
+        sustained_focus_score=profile_result["signals"]["sart_vigilance"]["score"],
         self_report_score=profile_result["signals"]["self_reported_baseline"]["score"],
-        distraction_recovery_score=profile_result["signals"]["distraction_recovery"]["score"],
+        distraction_recovery_score=profile_result["signals"]["digit_span_working_memory"]["score"],
         details=profile_result
     )
     db.add(retention_profile)

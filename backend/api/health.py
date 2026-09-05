@@ -22,10 +22,7 @@ def health_check(db: Session = Depends(get_db)):
         "scheduler": "ready",
         "content_ingestion": "ready",
         "reader_rag": "ready",
-        "quiz_generator": "ready",
-        "weak_topic_recommender": "ready",
-        "companion": "ready",
-        "orchestrator": "ready"
+        "quiz_generator": "ready"
     }
 
     return {
