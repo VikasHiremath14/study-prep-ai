@@ -16,7 +16,10 @@ from backend.db.session import engine
 import backend.db.models  # Ensure all models are registered
 
 # Create database tables if not created
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    pass
 
 app = FastAPI(
     title=settings.APP_NAME,

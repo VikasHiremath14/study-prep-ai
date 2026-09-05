@@ -1,13 +1,8 @@
 """Unit tests for Anti-Web Search Quiz, Diagram Lens Explainer, References Curation & File Upload."""
 import io
 import pytest
-from fastapi.testclient import TestClient
-from backend.app.main import app
 
-client = TestClient(app)
-
-
-def test_file_upload_txt_and_pdf():
+def test_file_upload_txt_and_pdf(client):
     """Tests multipart file upload endpoint."""
     # Test TXT upload
     sample_text = b"Chapter 1: Asymptotic Complexity. Big-O provides an upper bound on asymptotic runtime. Dynamic arrays provide O(1) amortized insertion."
@@ -29,7 +24,7 @@ def test_file_upload_txt_and_pdf():
     assert "target_plan" in data
 
 
-def test_page_references_retrieval():
+def test_page_references_retrieval(client):
     """Tests page-level curated YouTube and web reference retrieval."""
     # First ingest a sample document
     ingest_res = client.get("/api/documents/sample/dsa")
@@ -46,7 +41,7 @@ def test_page_references_retrieval():
     assert len(ref_data["websites"]) >= 1
 
 
-def test_page_references_post_dynamic_analysis():
+def test_page_references_post_dynamic_analysis(client):
     """Tests that POST /api/reader/references dynamically analyzes page content across disciplines."""
     # 1. Test Literature/Media character analysis page (e.g. Breaking Bad)
     media_res = client.post("/api/reader/references", json={
@@ -117,7 +112,7 @@ def test_page_references_post_dynamic_analysis():
     assert len(custom_data["websites"]) >= 1
 
 
-def test_diagram_lens_explanation():
+def test_diagram_lens_explanation(client):
     """Tests the multimodal diagram lens explainer."""
     payload = {
         "document_id": 1,
@@ -135,7 +130,7 @@ def test_diagram_lens_explanation():
     assert len(data["explanation"]) > 20
 
 
-def test_anti_web_search_quiz_generation_and_submission():
+def test_anti_web_search_quiz_generation_and_submission(client):
     """Tests generation of Anti-Web Search scenario quizzes and evaluation of student responses."""
     # 1. Generate quiz
     gen_payload = {
@@ -171,7 +166,7 @@ def test_anti_web_search_quiz_generation_and_submission():
     assert "detailed_results" in sub_data
 
 
-def test_feynman_technique_evaluation():
+def test_feynman_technique_evaluation(client):
     """Tests Feynman technique open-ended explanation evaluation."""
     payload = {
         "document_title": "Data Structures & Algorithmic Analysis",

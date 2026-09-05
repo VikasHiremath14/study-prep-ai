@@ -1,10 +1,6 @@
 """Tests for Active Document Reader & Grounded Line-Level QA Tutor (Phase 4 & 5)."""
 import pytest
-from fastapi.testclient import TestClient
-from backend.app.main import app
 from backend.agents.qa_tutor import qa_tutor_agent, ExplainRequest, AskDoubtRequest
-
-client = TestClient(app)
 
 
 def test_qa_tutor_explain_selection_modes():
@@ -51,7 +47,7 @@ def test_qa_tutor_resolve_doubt():
     assert res_doubt["confidence_score"] > 0.8
 
 
-def test_reader_api_explain_endpoint():
+def test_reader_api_explain_endpoint(client):
     """Verify POST /api/reader/explain generates response via REST."""
     payload = {
         "document_id": 1,
@@ -68,7 +64,7 @@ def test_reader_api_explain_endpoint():
     assert "explanation" in data
 
 
-def test_reader_api_ask_doubt_endpoint():
+def test_reader_api_ask_doubt_endpoint(client):
     """Verify POST /api/reader/ask-doubt resolves question via REST."""
     payload = {
         "document_id": 1,
@@ -85,7 +81,7 @@ def test_reader_api_ask_doubt_endpoint():
     assert "answer" in data
 
 
-def test_reader_api_notes_and_bookmarks():
+def test_reader_api_notes_and_bookmarks(client):
     """Verify note creation, retrieval, and bookmark toggling."""
     note_payload = {
         "student_id": 1,
