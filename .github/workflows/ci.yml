@@ -43,7 +43,7 @@ jobs:
 
     - name: Run Pytest Test Suite
       env:
-        DATABASE_URL: sqlite:///:memory:
+        DATABASE_URL: "sqlite:///:memory:"
         LLM_PROVIDER: gemini
         LLM_API_KEY: test_mock_key
         PYTHONPATH: .
