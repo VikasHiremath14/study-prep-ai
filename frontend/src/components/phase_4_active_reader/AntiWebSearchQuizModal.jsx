@@ -218,6 +218,26 @@ export default function AntiWebSearchQuizModal({
         const data = await res.json();
         setSubmissionResult(data);
         playMasteryChime(data.is_mastered);
+
+        // Sync quiz attempt to localStorage for the student records dashboard
+        try {
+          const prev = JSON.parse(localStorage.getItem('study_prep_quizzes') || '[]');
+          const newQuizEntry = {
+            id: Date.now(),
+            title: `Anti-Web Search Quiz: ${documentTitle} (Target Day ${dayNumber})`,
+            score: data.score != null ? data.score : Object.values(selectedAnswers).length,
+            total_questions: data.total_questions || questions.length || 3,
+            feynman_score: data.is_mastered ? "95% High Mastery" : "75% Solid Understanding",
+            mastery_level: data.mastery_tier || (data.is_mastered ? "Deep Conceptual Grip" : "Review In Progress"),
+            completed_at: new Date().toLocaleDateString(),
+            questions: questions.map((q, qIdx) => ({
+              q: q.question,
+              user_ans: q.options[selectedAnswers[qIdx]] || "Answered",
+              is_correct: selectedAnswers[qIdx] === q.correct_index
+            }))
+          };
+          localStorage.setItem('study_prep_quizzes', JSON.stringify([newQuizEntry, ...prev]));
+        } catch (e) {}
       }
     } catch (err) {
       console.error("Quiz submission error:", err);

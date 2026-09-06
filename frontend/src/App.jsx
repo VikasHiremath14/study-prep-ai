@@ -3,9 +3,10 @@ import {
   AuthPage, 
   ProfileSetupPage, 
   BreakingBadLoader, 
-  DevShortcutsBar 
+  DevShortcutsBar,
+  StudentRecordsModal 
 } from './components/phase_0_auth_setup';
-import OnboardingWizard from './components/phase_1_retention_profiler/OnboardingWizard';
+import { OnboardingWizard, ExistingProfilePrompt } from './components/phase_1_retention_profiler';
 import TimetableCorrector from './components/phase_2_circadian_scheduler/TimetableCorrector';
 import DocumentIngestionPage from './components/phase_3_content_ingestion/DocumentIngestionPage';
 import DocumentReaderPage from './components/phase_4_active_reader/DocumentReaderPage';
@@ -24,6 +25,8 @@ export default function App() {
   const [currentView, setCurrentView] = useState('auth');
   const [currentUser, setCurrentUser] = useState(null);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [forceRetakeExam, setForceRetakeExam] = useState(false);
+  const [showStudentRecordsModal, setShowStudentRecordsModal] = useState(false);
   
   // Phase 2 & Phase 3 Shared State
   const [timetableData, setTimetableData] = useState(null);
@@ -76,20 +79,84 @@ export default function App() {
     });
   };
 
-  // Auth Completed -> Transition to Profile Setup (Name & Education)
-  const handleAuthComplete = (authData) => {
-    setCurrentUser(authData);
-    triggerBreakingBadTransition(
-      "Initializing Student Cognitive Workspace...",
-      "profile_setup"
+  // Auth Completed -> Jump directly to Phase 2 Timetable for old users with records, or Profile Setup for new users
+  const handleAuthComplete = (authData, studentData = null, records = null) => {
+    const fullAuth = {
+      ...authData,
+      id: authData?.user_id || authData?.id || 1,
+      user_id: authData?.user_id || authData?.id || 1
+    };
+    setCurrentUser(fullAuth);
+    setForceRetakeExam(false);
+
+    let mergedProfile = {
+      ...(studentData || {}),
+      id: studentData?.id || studentData?.student_id || fullAuth.id,
+      student_id: studentData?.id || studentData?.student_id || fullAuth.id,
+      user_id: fullAuth.user_id,
+      name: studentData?.name || studentData?.student_name || fullAuth.email?.split('@')[0] || "Student",
+      student_name: studentData?.name || studentData?.student_name || fullAuth.email?.split('@')[0] || "Student",
+      email: fullAuth.email,
+      phone_number: studentData?.phone_number || fullAuth.phone_number || null,
+      grade_level: studentData?.grade_level || "engineering",
+      wake_time: studentData?.wake_time || "06:30",
+      sleep_time: studentData?.sleep_time || "23:30"
+    };
+
+    if (records?.retention_profile) {
+      mergedProfile = {
+        ...mergedProfile,
+        retention_score: records.retention_profile.retention_score,
+        profile: records.retention_profile.details || records.retention_profile
+      };
+    }
+    setStudentProfile(mergedProfile);
+    try {
+      localStorage.setItem('study_prep_student', JSON.stringify(mergedProfile));
+      localStorage.setItem('study_prep_auth', JSON.stringify(fullAuth));
+    } catch (e) {}
+
+    if (records?.latest_schedule) {
+      setTimetableData(records.latest_schedule);
+      try {
+        localStorage.setItem('study_prep_timetable', JSON.stringify(records.latest_schedule));
+      } catch (e) {}
+    }
+
+    const hasExistingRecords = Boolean(
+      records?.retention_profile || 
+      records?.latest_schedule || 
+      studentData?.retention_score || 
+      mergedProfile?.retention_score
     );
+
+    if (hasExistingRecords && !authData.isNewUser) {
+      // Old user with existing records: skip Tell us about yourself & jump directly to Phase 2 Timetable!
+      triggerBreakingBadTransition(
+        `Welcome Back, ${mergedProfile.name}! Loading Phase 2 Circadian Timetable...`,
+        "scheduler"
+      );
+    } else {
+      // New user: proceed to Tell us about yourself (profile setup)
+      triggerBreakingBadTransition(
+        "Initializing Student Cognitive Workspace...",
+        "profile_setup"
+      );
+    }
   };
 
   // Profile Setup Completed (Name & Education) -> Transition to Retention Profiler
   const handleProfileSetupComplete = (profileData) => {
-    setStudentProfile((prev) => ({ ...prev, ...profileData }));
+    const merged = { 
+      ...(studentProfile || {}), 
+      ...profileData,
+      id: studentProfile?.id || studentProfile?.student_id || currentUser?.id || 1,
+      student_id: studentProfile?.id || studentProfile?.student_id || currentUser?.id || 1,
+      user_id: currentUser?.id || currentUser?.user_id || 1
+    };
+    setStudentProfile(merged);
     try {
-      localStorage.setItem('study_prep_student', JSON.stringify(profileData));
+      localStorage.setItem('study_prep_student', JSON.stringify(merged));
     } catch (e) {}
 
     triggerBreakingBadTransition(
@@ -100,9 +167,16 @@ export default function App() {
 
   // Retention Profiling Completed -> Result Saved -> Transition to Circadian Scheduler
   const handleProceedToScheduler = (fullResultData) => {
-    setStudentProfile(fullResultData);
+    const merged = {
+      ...(studentProfile || {}),
+      ...fullResultData,
+      id: fullResultData?.student_id || studentProfile?.id || studentProfile?.student_id || currentUser?.id || 1,
+      student_id: fullResultData?.student_id || studentProfile?.id || studentProfile?.student_id || currentUser?.id || 1,
+      user_id: currentUser?.id || currentUser?.user_id || 1
+    };
+    setStudentProfile(merged);
     try {
-      localStorage.setItem('study_prep_student', JSON.stringify(fullResultData));
+      localStorage.setItem('study_prep_student', JSON.stringify(merged));
     } catch (e) {}
 
     triggerBreakingBadTransition(
@@ -110,6 +184,7 @@ export default function App() {
       "scheduler"
     );
   };
+
 
   // Timetable Completed -> Transition to Phase 3 Document Ingestion
   const handleProceedToIngestion = (scheduleResult) => {
@@ -139,9 +214,9 @@ export default function App() {
     );
   };
 
-  // Developer Fast-Forward Shortcuts
+  // Developer Fast-Forward Shortcuts Handlers
   const handleDevSkipToPhase2 = () => {
-    const devUser = { email: "vikash@example.com", isNewUser: false };
+    const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
       name: "Vikas Sharma",
@@ -159,13 +234,13 @@ export default function App() {
     setCurrentUser(devUser);
     setStudentProfile(devProfile);
     triggerBreakingBadTransition(
-      "Developer Fast-Forward: Calibrating Phase 2 Timetable...",
+      "Developer Fast-Forward: Calibrating Phase 2 Circadian Timetable...",
       "scheduler"
     );
   };
 
   const handleDevSkipToPhase3 = () => {
-    const devUser = { email: "vikash@example.com", isNewUser: false };
+    const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
       name: "Vikas Sharma",
@@ -180,22 +255,28 @@ export default function App() {
         recommended_break_duration_minutes: 15
       }
     };
-    const devSubjects = [
-      { name: 'Data Structures & Algorithmic Analysis', difficulty: 'hard', allocated_hours: 1.5, icon: '💻' },
-      { name: 'Operating Systems: Three Easy Pieces', difficulty: 'hard', allocated_hours: 1.5, icon: '⚡' },
-      { name: 'Advanced Mathematics & Calculus', difficulty: 'medium', allocated_hours: 1.0, icon: '📐' }
-    ];
+    const devSchedule = {
+      wake_time: "06:30",
+      total_study_hours: 4.5,
+      slots: [
+        { start: "07:30", end: "08:15", type: "focus_slot", subject: "Data Structures & Algorithms", subject_index: 0 },
+        { start: "08:15", end: "08:30", type: "break_slot", label: "Synaptic Reset" },
+        { start: "08:30", end: "09:15", type: "focus_slot", subject: "Operating Systems", subject_index: 1 },
+        { start: "14:00", end: "14:45", type: "focus_slot", subject: "Computer Networks", subject_index: 2 }
+      ]
+    };
     setCurrentUser(devUser);
     setStudentProfile(devProfile);
-    setSelectedSubjects(devSubjects);
+    setTimetableData(devSchedule);
+    setSelectedSubjects(["Data Structures & Algorithms", "Operating Systems", "Computer Networks"]);
     triggerBreakingBadTransition(
-      "Developer Fast-Forward: Initializing Phase 3 Ingestion...",
+      "Developer Fast-Forward: Launching Phase 3 Content Ingestion...",
       "ingestion"
     );
   };
 
   const handleDevSkipToPhase4 = () => {
-    const devUser = { email: "vikash@example.com", isNewUser: false };
+    const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
       name: "Vikas Sharma",
@@ -255,6 +336,57 @@ export default function App() {
     );
   };
 
+  // Clear All Student Records (Keeps User Account Signed In & Allows Retaking Retention Profiler)
+  const handleClearAllRecords = async () => {
+    const studentId = studentProfile?.id || studentProfile?.student_id || 1;
+    try {
+      await fetch(`/api/auth/student/${studentId}/clear-records`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {});
+    } catch (e) {}
+
+    // Preserve user identity (Name, Phone, Email, Grade, Student ID) while clearing study history
+    const preservedName = studentProfile?.name || studentProfile?.student_name || currentUser?.name || currentUser?.email?.split('@')[0] || "Student";
+    const preservedGrade = studentProfile?.grade_level || "engineering";
+    const preservedPhone = studentProfile?.phone_number || currentUser?.phone_number || null;
+    const preservedWake = studentProfile?.wake_time || "06:30";
+    const preservedSleep = studentProfile?.sleep_time || "23:30";
+
+    const cleanStudentProfile = {
+      id: studentId,
+      student_id: studentId,
+      user_id: currentUser?.user_id || currentUser?.id,
+      name: preservedName,
+      student_name: preservedName,
+      phone_number: preservedPhone,
+      email: currentUser?.email,
+      grade_level: preservedGrade,
+      wake_time: preservedWake,
+      sleep_time: preservedSleep,
+      retention_score: null,
+      profile: null
+    };
+
+    try {
+      localStorage.setItem('study_prep_student', JSON.stringify(cleanStudentProfile));
+      localStorage.removeItem('study_prep_timetable');
+      localStorage.removeItem('study_prep_subjects');
+    } catch (e) {}
+
+    setStudentProfile(cleanStudentProfile);
+    setTimetableData(null);
+    setSelectedSubjects([]);
+    setActiveDocument(null);
+    setAllDocuments([]);
+    setForceRetakeExam(true);
+
+    triggerBreakingBadTransition(
+      `All Study Records Cleared! Launching Fresh Retention Assessment for ${preservedName}...`,
+      "retention_wizard"
+    );
+  };
+
   // Logout / Switch Account
   const handleLogout = () => {
     try {
@@ -269,6 +401,8 @@ export default function App() {
     setSelectedSubjects([]);
     setActiveDocument(null);
     setAllDocuments([]);
+    setForceRetakeExam(false);
+    setShowStudentRecordsModal(false);
     setCurrentView('auth');
   };
 
@@ -278,6 +412,25 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
+      {/* Student Records Dashboard Modal */}
+      <StudentRecordsModal
+        isOpen={showStudentRecordsModal}
+        onClose={() => setShowStudentRecordsModal(false)}
+        currentUser={currentUser}
+        studentProfile={studentProfile}
+        timetableData={timetableData}
+        onClearRecords={handleClearAllRecords}
+        onLogout={handleLogout}
+        onRetakeAssessment={() => {
+          setShowStudentRecordsModal(false);
+          setForceRetakeExam(true);
+          triggerBreakingBadTransition(
+            "Launching Neurocognitive Retention Assessment Battery...",
+            "retention_wizard"
+          );
+        }}
+      />
+
       {/* Breaking Bad Iconic Chemical Intro Loader Overlay */}
       {showBreakingBadLoader && (
         <BreakingBadLoader
@@ -380,23 +533,34 @@ export default function App() {
               </div>
             )}
 
-            {/* User Account / Logout Widget */}
+            {/* User Account Button (Opens Records Dashboard Modal) & Logout */}
             {currentUser && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '5px 12px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.8rem'
-                }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                  <span style={{ color: '#ffffff', fontWeight: 600 }}>{studentDisplayName}</span>
-                  <span style={{ color: 'var(--text-dim)', fontSize: '0.72rem', textTransform: 'capitalize' }}>({studentGrade})</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowStudentRecordsModal(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '5px 14px',
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(99, 102, 241, 0.4)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 15px rgba(99, 102, 241, 0.15)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  title="Click to view all study records, retention reports, timetable & clear data"
+                >
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+                  <span style={{ color: '#ffffff', fontWeight: 700 }}>{studentDisplayName}</span>
+                  <span style={{ color: '#a5b4fc', fontSize: '0.72rem', textTransform: 'capitalize' }}>({studentGrade})</span>
+                  <span style={{ fontSize: '0.68rem', background: 'rgba(255, 255, 255, 0.1)', padding: '1px 5px', borderRadius: '4px', color: '#cbd5e1' }}>
+                    Records 📋
+                  </span>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="btn btn-secondary"
@@ -535,12 +699,31 @@ export default function App() {
         {/* Step 2: Neurocognitive Retention Assessment (Phase 1) */}
         {currentView === 'retention_wizard' && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px' }}>
-            <OnboardingWizard
-              initialStudentData={studentProfile}
-              onBackToProfile={() => setCurrentView('profile_setup')}
-              onComplete={(profileData) => setStudentProfile(profileData)}
-              onProceedToScheduler={handleProceedToScheduler}
-            />
+            {(studentProfile?.profile?.retention_score || studentProfile?.retention_score) && !forceRetakeExam ? (
+              <ExistingProfilePrompt
+                profileData={studentProfile}
+                timetableData={timetableData}
+                onSkipToTimetable={() => handleProceedToScheduler(studentProfile)}
+                onRetakeExam={() => setForceRetakeExam(true)}
+                onBackToProfile={() => setCurrentView('profile_setup')}
+              />
+            ) : (
+              <OnboardingWizard
+                initialStudentData={studentProfile}
+                onBackToProfile={() => {
+                  if (studentProfile?.profile?.retention_score || studentProfile?.retention_score) {
+                    setForceRetakeExam(false);
+                  } else {
+                    setCurrentView('profile_setup');
+                  }
+                }}
+                onComplete={(profileData) => {
+                  setStudentProfile(profileData);
+                  setForceRetakeExam(false);
+                }}
+                onProceedToScheduler={handleProceedToScheduler}
+              />
+            )}
           </div>
         )}
 
@@ -559,8 +742,24 @@ export default function App() {
             </div>
             <TimetableCorrector
               activeProfile={studentProfile}
+              existingSchedule={timetableData || studentProfile?.latest_schedule}
+              onTimetableUpdated={(newSchedule, newSubjects) => {
+                if (newSchedule) {
+                  setTimetableData(newSchedule);
+                  try {
+                    localStorage.setItem('study_prep_timetable', JSON.stringify(newSchedule));
+                  } catch (e) {}
+                }
+                if (newSubjects) {
+                  setSelectedSubjects(newSubjects);
+                  try {
+                    localStorage.setItem('study_prep_subjects', JSON.stringify(newSubjects));
+                  } catch (e) {}
+                }
+              }}
               onNavigateToReader={handleProceedToIngestion}
             />
+
           </div>
         )}
 

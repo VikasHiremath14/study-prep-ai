@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from backend.api.health import router as health_router
+from backend.api.auth import router as auth_router
 from backend.api.retention import router as retention_router
 from backend.api.scheduler import router as scheduler_router
 from backend.api.documents import router as documents_router
@@ -10,6 +11,9 @@ api_router = APIRouter()
 
 # Include health router
 api_router.include_router(health_router, prefix="", tags=["Health"])
+
+# Include auth & user accounts router
+api_router.include_router(auth_router, prefix="", tags=["Authentication & User Records"])
 
 # Include retention & student onboarding router
 api_router.include_router(retention_router, prefix="", tags=["Students & Retention"])

@@ -20,7 +20,7 @@ const EDUCATION_LEVELS = [
 ];
 
 export default function ProfileSetupPage({ initialData, onBack, onProceedToRetention }) {
-  const [studentName, setStudentName] = useState(initialData?.student_name || '');
+  const [studentName, setStudentName] = useState(initialData?.student_name || initialData?.name || '');
   const [gradeLevel, setGradeLevel] = useState(initialData?.grade_level || 'engineering');
   const [wakeTime, setWakeTime] = useState(initialData?.wake_time || '06:30');
   const [sleepTime, setSleepTime] = useState(initialData?.sleep_time || '23:30');
@@ -35,6 +35,7 @@ export default function ProfileSetupPage({ initialData, onBack, onProceedToReten
 
     const profileData = {
       ...initialData,
+      name: studentName.trim(),
       student_name: studentName.trim(),
       grade_level: gradeLevel,
       wake_time: wakeTime,

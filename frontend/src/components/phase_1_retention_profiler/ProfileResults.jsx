@@ -403,6 +403,26 @@ export default function ProfileResults({ profileData, onRetake, onProceedToSched
         </div>
       </div>
 
+      {/* Save Record Notice Banner */}
+      <div style={{
+        padding: '12px 16px',
+        borderRadius: '10px',
+        background: 'rgba(16, 185, 129, 0.12)',
+        border: '1px solid rgba(16, 185, 129, 0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '20px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6ee7b7', fontSize: '0.84rem', fontWeight: 600 }}>
+          <CheckCircle2 size={16} />
+          Retention baseline profile calibrated &amp; saved to your student account.
+        </div>
+        <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
+          Permanent Record &bull; Student #{student_id || 1}
+        </span>
+      </div>
+
       {/* Action Buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
         <button className="btn btn-secondary" onClick={onRetake} style={{ gap: '8px', fontSize: '0.85rem' }}>
@@ -422,7 +442,7 @@ export default function ProfileResults({ profileData, onRetake, onProceedToSched
           }}
         >
           <Sparkles size={16} />
-          Generate Calibrated Timetable &amp; Calendar
+          Save Retention Record &amp; Proceed to Phase 2 Timetable
           <ArrowRight size={16} />
         </button>
       </div>

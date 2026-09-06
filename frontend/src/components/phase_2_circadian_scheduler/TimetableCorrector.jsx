@@ -123,12 +123,37 @@ function playChime(type = 'start') {
   }
 }
 
-export default function TimetableCorrector({ activeProfile, onNavigateToReader }) {
+export default function TimetableCorrector({ activeProfile, existingSchedule, onTimetableUpdated, onNavigateToReader }) {
   const studentName = activeProfile?.name || activeProfile?.student_name || "Student";
   const gradeLevel = activeProfile?.grade_level || "engineering";
   const retentionScore = activeProfile?.profile?.retention_score != null ? activeProfile.profile.retention_score : 0.78;
   const focusTier = activeProfile?.profile?.focus_tier || (retentionScore >= 0.75 ? "Deep Focus Master" : "Standard Collegiate");
   const breakInterval = activeProfile?.profile?.break_interval_minutes || 45;
+
+  // Existing schedule detection
+  const [existingScheduleData, setExistingScheduleData] = useState(() => {
+    if (existingSchedule && existingSchedule.slots && existingSchedule.slots.length > 0) {
+      return existingSchedule;
+    }
+    if (activeProfile?.latest_schedule && activeProfile.latest_schedule.slots && activeProfile.latest_schedule.slots.length > 0) {
+      return activeProfile.latest_schedule;
+    }
+    try {
+      const saved = localStorage.getItem('study_prep_timetable');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.slots && parsed.slots.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return null;
+  });
+
+  const [showExistingPrompt, setShowExistingPrompt] = useState(() => {
+    return Boolean(
+      (existingSchedule && existingSchedule.slots && existingSchedule.slots.length > 0) ||
+      (activeProfile?.latest_schedule && activeProfile.latest_schedule.slots && activeProfile.latest_schedule.slots.length > 0)
+    );
+  });
 
   // View Mode: 'autopilot' (Circadian Auto-Pacing) or 'scanner' (Delusion & Burnout Audit)
   const [activeSubTab, setActiveSubTab] = useState('autopilot');
@@ -140,7 +165,16 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
   const [wakeTime, setWakeTime] = useState(activeProfile?.wake_time || "06:30");
   const [sleepTime, setSleepTime] = useState(activeProfile?.sleep_time || "23:30");
   const [targetHours, setTargetHours] = useState(5.0);
-  const [subjects, setSubjects] = useState(DEFAULT_SUBJECTS);
+  const [subjects, setSubjects] = useState(() => {
+    try {
+      const savedSubs = localStorage.getItem('study_prep_subjects');
+      if (savedSubs) {
+        const parsed = JSON.parse(savedSubs);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_SUBJECTS;
+  });
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectDiff, setNewSubjectDiff] = useState("hard");
 
@@ -154,6 +188,7 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
   const [loading, setLoading] = useState(false);
   const [calibratedSchedule, setCalibratedSchedule] = useState(null);
   const [error, setError] = useState(null);
+
 
   // Live Slot Statuses & Active Countdown Timer
   const [slotStatuses, setSlotStatuses] = useState({});
@@ -277,6 +312,29 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
     setBusySlots(busySlots.filter((_, i) => i !== idx));
   };
 
+  const handleUseExistingTimetable = () => {
+    if (!existingScheduleData) return;
+    setCalibratedSchedule(existingScheduleData);
+    setIsGenerated(true);
+    setShowExistingPrompt(false);
+    if (onNavigateToReader) {
+      onNavigateToReader({ schedule: existingScheduleData, subjects: subjects });
+    }
+  };
+
+  const handleViewCurrentTimetable = () => {
+    if (!existingScheduleData) return;
+    setCalibratedSchedule(existingScheduleData);
+    setIsGenerated(true);
+    setShowExistingPrompt(false);
+  };
+
+  const handleCreateNewTimetable = () => {
+    setCalibratedSchedule(null);
+    setIsGenerated(false);
+    setShowExistingPrompt(false);
+  };
+
   const handleGenerateSchedule = async () => {
     if (subjects.length === 0) {
       setError("Please add at least one subject you will be studying today.");
@@ -287,7 +345,7 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
     setError(null);
     try {
       const payload = {
-        student_id: activeProfile?.student_id || null,
+        student_id: activeProfile?.student_id || activeProfile?.id || null,
         student_name: studentName,
         grade_level: gradeLevel,
         wake_time: wakeTime,
@@ -308,13 +366,19 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
       if (!res.ok) throw new Error(`Server returned status ${res.status}`);
       const data = await res.json();
       setCalibratedSchedule(data);
+      setExistingScheduleData(data);
       setIsGenerated(true);
+      setShowExistingPrompt(false);
       
-      // Save in localStorage
+      // Save in localStorage & notify parent
       try {
         localStorage.setItem('study_prep_timetable', JSON.stringify(data));
         localStorage.setItem('study_prep_subjects', JSON.stringify(subjects));
       } catch (e) {}
+
+      if (onTimetableUpdated) {
+        onTimetableUpdated(data, subjects);
+      }
 
     } catch (err) {
       console.error("Scheduler error:", err);
@@ -323,6 +387,7 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
       setLoading(false);
     }
   };
+
 
   const handleExportICS = async (customSlots = null) => {
     const slotsToExport = customSlots || calibratedSchedule?.slots;
@@ -486,6 +551,153 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
       {activeSubTab === 'autopilot' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* EXISTING TIMETABLE PROMPT NOTIFICATION BANNER */}
+          {showExistingPrompt && existingScheduleData && (
+            <div className="glass-panel" style={{
+              padding: '24px 28px',
+              background: 'radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.22) 0%, rgba(16, 185, 129, 0.16) 60%, rgba(15, 23, 42, 0.9) 100%)',
+              border: '1.5px solid rgba(99, 102, 241, 0.45)',
+              borderRadius: '16px',
+              boxShadow: '0 0 35px rgba(99, 102, 241, 0.25), 0 10px 30px rgba(0, 0, 0, 0.4)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Decorative corner glow */}
+              <div style={{
+                position: 'absolute',
+                top: '-30px',
+                right: '-30px',
+                width: '120px',
+                height: '120px',
+                background: 'radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%)',
+                borderRadius: '50%',
+                pointerEvents: 'none'
+              }} />
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #6366f1 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  boxShadow: '0 0 18px rgba(16, 185, 129, 0.5)',
+                  flexShrink: 0
+                }}>
+                  🗓️
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff', margin: 0 }}>
+                      You Already Have an Active Circadian Timetable!
+                    </h3>
+                    <span style={{
+                      background: 'rgba(16, 185, 129, 0.2)',
+                      color: '#34d399',
+                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                      padding: '2px 8px',
+                      borderRadius: '100px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700
+                    }}>
+                      Saved in Records
+                    </span>
+                  </div>
+                  
+                  <p style={{ fontSize: '0.88rem', color: '#cbd5e1', lineHeight: '1.5', margin: '0 0 12px 0' }}>
+                    An active daily timetable calibrated for <strong>Wake {existingScheduleData.wake_time || '06:30'}</strong> with <strong>{existingScheduleData.total_study_hours || existingScheduleData.actual_scheduled_study_hours || 4.5} hours</strong> of scheduled focus and <strong>{existingScheduleData.slots?.length || 4} total pacing slots</strong> is ready in your account.
+                  </p>
+
+                  {/* Mini Preview of Existing Slots */}
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '8px',
+                    padding: '10px 14px',
+                    background: 'rgba(0, 0, 0, 0.35)',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    marginBottom: '16px'
+                  }}>
+                    {existingScheduleData.slots?.slice(0, 5).map((slot, sIdx) => (
+                      <span key={sIdx} style={{
+                        fontSize: '0.75rem',
+                        padding: '3px 10px',
+                        borderRadius: '6px',
+                        background: slot.type === 'study' ? 'rgba(99, 102, 241, 0.25)' : (slot.type === 'break' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.08)'),
+                        color: slot.type === 'study' ? '#a5b4fc' : (slot.type === 'break' ? '#34d399' : '#e2e8f0'),
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        fontWeight: 600
+                      }}>
+                        {slot.start}-{slot.end}: {slot.title || slot.subject || slot.label}
+                      </span>
+                    ))}
+                    {existingScheduleData.slots?.length > 5 && (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', alignSelf: 'center' }}>
+                        +{existingScheduleData.slots.length - 5} more slots...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action Choice Buttons */}
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button
+                      onClick={handleUseExistingTimetable}
+                      className="btn btn-primary"
+                      style={{
+                        padding: '10px 20px',
+                        fontSize: '0.86rem',
+                        fontWeight: 800,
+                        gap: '8px',
+                        background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                        boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                      }}
+                    >
+                      <CheckCircle2 size={16} />
+                      Keep Existing Timetable &amp; Proceed to Materials (Phase 3)
+                    </button>
+
+                    <button
+                      onClick={handleViewCurrentTimetable}
+                      className="btn btn-secondary"
+                      style={{
+                        padding: '10px 18px',
+                        fontSize: '0.86rem',
+                        fontWeight: 700,
+                        gap: '6px',
+                        borderColor: 'rgba(99, 102, 241, 0.5)',
+                        color: '#a5b4fc'
+                      }}
+                    >
+                      <Clock size={15} />
+                      View &amp; Track Current Timetable
+                    </button>
+
+                    <button
+                      onClick={handleCreateNewTimetable}
+                      className="btn btn-secondary"
+                      style={{
+                        padding: '10px 18px',
+                        fontSize: '0.86rem',
+                        fontWeight: 700,
+                        gap: '6px',
+                        borderColor: 'rgba(245, 158, 11, 0.4)',
+                        color: '#fcd34d'
+                      }}
+                    >
+                      <RotateCcw size={15} />
+                      Create / Calibrate New Timetable
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Phase 1 Retention Profile Insights Bar */}
           <div className="glass-panel" style={{
             padding: '14px 20px',
@@ -512,6 +724,7 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
               ✓ Retention Calibrated
             </div>
           </div>
+
 
           {/* STEP 1: WHAT ARE YOU STUDYING TODAY? (Subject Intake) */}
           <div className="glass-panel" style={{ padding: '22px 24px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
@@ -983,15 +1196,27 @@ export default function TimetableCorrector({ activeProfile, onNavigateToReader }
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleExportICS()}
-                  className="btn btn-secondary"
-                  style={{ gap: '8px', fontSize: '0.85rem', padding: '8px 16px', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-                >
-                  <Download size={14} color="var(--primary-light)" />
-                  Export .ics Calendar
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    onClick={handleCreateNewTimetable}
+                    className="btn btn-secondary"
+                    style={{ gap: '6px', fontSize: '0.82rem', padding: '8px 14px', borderColor: 'rgba(245, 158, 11, 0.4)', color: '#fcd34d' }}
+                    title="Change subjects or study hours and calibrate a fresh schedule"
+                  >
+                    <RotateCcw size={13} />
+                    Recalibrate / Create New
+                  </button>
+                  <button
+                    onClick={() => handleExportICS()}
+                    className="btn btn-secondary"
+                    style={{ gap: '8px', fontSize: '0.82rem', padding: '8px 14px', borderColor: 'rgba(99, 102, 241, 0.4)' }}
+                  >
+                    <Download size={13} color="var(--primary-light)" />
+                    Export .ics
+                  </button>
+                </div>
               </div>
+
 
               {/* AI Strategic Rationale Card */}
               <div className="glass-panel" style={{ padding: '20px', borderLeft: '4px solid var(--primary)' }}>

@@ -15,8 +15,13 @@ class Settings(BaseSettings):
     LLM_PROVIDER: Literal["gemini", "claude", "mock"] = "gemini"
     LLM_API_KEY: str = ""
 
-    # Database Configuration (PostgreSQL + pgvector or SQLite for tests/local)
+    # Database Configuration (PostgreSQL / Supabase + pgvector or SQLite for tests/local)
     DATABASE_URL: str = "sqlite:///./study_prep_ai.db"
+
+    # Supabase Configuration (Optional for Cloud Auth & Direct Vector Storage)
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

@@ -1,5 +1,6 @@
 export { default as OnboardingWizard } from './OnboardingWizard';
 export { default as ProfileResults } from './ProfileResults';
+export { default as ExistingProfilePrompt } from './ExistingProfilePrompt';
 export { default as StepStudentInfo } from './StepStudentInfo';
 export { default as StepSART } from './StepSART';
 export { default as StepDigitSpan } from './StepDigitSpan';

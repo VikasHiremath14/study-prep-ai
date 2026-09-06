@@ -31,23 +31,30 @@ def calibrate_timetable(payload: TimetableCalibrationRequest, db: Session = Depe
     """Runs the Timetable Correction Agent to generate an optimal, retention-calibrated schedule."""
     result = scheduler_agent.run(payload)
 
-    # If student_id is provided, save to database
+    # If student_id or student_name is provided, save to database
+    student = None
     if payload.student_id:
         student = db.query(Student).filter(Student.id == payload.student_id).first()
-        if student:
-            schedule = Schedule(
-                student_id=student.id,
-                wake_time=payload.wake_time,
-                total_study_hours=result["actual_scheduled_study_hours"],
-                slots=result["slots"],
-                corrections_made=result["corrections_made"]
-            )
-            db.add(schedule)
-            db.commit()
-            db.refresh(schedule)
-            result["schedule_id"] = schedule.id
+    if not student and payload.student_name:
+        student = db.query(Student).filter(Student.name == payload.student_name).first()
+
+    if student:
+        schedule = Schedule(
+            student_id=student.id,
+            wake_time=payload.wake_time,
+            total_study_hours=result["actual_scheduled_study_hours"],
+            slots=result["slots"],
+            corrections_made=result["corrections_made"]
+        )
+        db.add(schedule)
+        student.wake_time = payload.wake_time
+        student.sleep_time = payload.sleep_time
+        db.commit()
+        db.refresh(schedule)
+        result["schedule_id"] = schedule.id
 
     return result
+
 
 
 @router.post("/diagnose-raw")

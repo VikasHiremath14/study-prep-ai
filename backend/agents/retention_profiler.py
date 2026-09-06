@@ -99,14 +99,19 @@ class SelfReportData(BaseModel):
 
 
 class RetentionProfilingPayload(BaseModel):
+    student_id: Optional[int] = None
+    user_id: Optional[int] = None
     student_name: str = "Student"
     grade_level: str = "engineering"  # 10th, 12th, engineering, mtech
+    wake_time: Optional[str] = "06:30"
+    sleep_time: Optional[str] = "23:30"
     sart_test: SARTTestResult = Field(default_factory=SARTTestResult)
     digit_span_test: DigitSpanTestResult = Field(default_factory=DigitSpanTestResult)
     delayed_recall_test: DelayedRecallTestResult = Field(default_factory=DelayedRecallTestResult)
     reel_watches: List[ReelClipWatch] = Field(default_factory=list)
     series_habits: List[SeriesItem] = Field(default_factory=list)
     self_report: SelfReportData = Field(default_factory=SelfReportData)
+
 
 
 # ---------------------------------------------------------

@@ -331,6 +331,26 @@ export default function DocumentReaderPage({
           const list = await updatedRes.json();
           setNotesList(list.notes || []);
         }
+
+        // Sync bookmark to local storage for records modal
+        try {
+          const prev = JSON.parse(localStorage.getItem('study_prep_notes') || '[]');
+          if (data.is_bookmarked) {
+            const bmEntry = {
+              id: Date.now(),
+              document_id: docId,
+              document_title: docTitle,
+              page_number: currentPageNum,
+              selected_text: `Bookmarked Page ${currentPageNum} in ${docTitle}`,
+              note_text: `Quick revision bookmark for Day ${activeTarget?.day_number || 1}`,
+              is_bookmark: true,
+              created_at: new Date().toISOString()
+            };
+            localStorage.setItem('study_prep_notes', JSON.stringify([bmEntry, ...prev.filter(p => !(p.document_id === docId && p.page_number === currentPageNum && p.is_bookmark))]));
+          } else {
+            localStorage.setItem('study_prep_notes', JSON.stringify(prev.filter(p => !(p.document_id === docId && p.page_number === currentPageNum && p.is_bookmark))));
+          }
+        } catch (e) {}
       }
     } catch (e) {
       console.error("Bookmark toggle error:", e);

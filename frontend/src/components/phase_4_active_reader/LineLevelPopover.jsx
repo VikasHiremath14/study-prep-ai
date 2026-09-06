@@ -158,6 +158,24 @@ export default function LineLevelPopover({
         const data = await res.json();
         setNoteSaved(true);
         if (onSaveNote) onSaveNote(data);
+
+        // Update local storage so student records modal is immediately updated
+        try {
+          const prev = JSON.parse(localStorage.getItem('study_prep_notes') || '[]');
+          const newEntry = {
+            id: data.note_id || data.id || Date.now(),
+            document_id: documentId || 1,
+            document_title: documentTitle,
+            page_number: pageNumber,
+            selected_text: selectedText,
+            note_text: noteContent.trim() || "Highlighted Key Excerpt",
+            color_tag: highlightColor,
+            is_bookmark: false,
+            created_at: new Date().toISOString()
+          };
+          localStorage.setItem('study_prep_notes', JSON.stringify([newEntry, ...prev]));
+        } catch (e) {}
+
         setTimeout(() => {
           onClose();
         }, 1200);

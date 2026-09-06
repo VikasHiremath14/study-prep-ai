@@ -14,15 +14,39 @@ except ImportError:
     Vector = None
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    phone_number = Column(String(30), nullable=True)
+    password_hash = Column(String(255), nullable=True)  # Hash for local auth
+    supabase_uid = Column(String(255), unique=True, index=True, nullable=True)  # Supabase Auth UID
+    auth_provider = Column(String(50), default="email")  # email, google, supabase
+    is_email_verified = Column(Boolean, default=False)
+    is_phone_verified = Column(Boolean, default=False)
+    otp_code = Column(String(10), nullable=True)
+    otp_expires_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_login_at = Column(DateTime, nullable=True)
+
+    student = relationship("Student", back_populates="user", uselist=False)
+
+
 class Student(Base):
     __tablename__ = "students"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
     name = Column(String(255), nullable=False, default="Student")
+    phone_number = Column(String(30), nullable=True)
     grade_level = Column(String(50), nullable=False)  # 10th, 12th, engineering, mtech
+    wake_time = Column(String(10), nullable=True, default="06:30")
+    sleep_time = Column(String(10), nullable=True, default="23:30")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # Relationships
+    user = relationship("User", back_populates="student")
     retention_profile = relationship("RetentionProfile", back_populates="student", uselist=False)
     schedules = relationship("Schedule", back_populates="student")
     notes = relationship("Note", back_populates="student")
@@ -32,6 +56,7 @@ class Student(Base):
     companion_messages = relationship("CompanionMessage", back_populates="student")
     backlogs = relationship("Backlog", back_populates="student")
     completions = relationship("Completion", back_populates="student")
+    daily_targets = relationship("DailyTarget", back_populates="student")
 
 
 class RetentionProfile(Base):
@@ -118,6 +143,7 @@ class DailyTarget(Base):
     is_completed = Column(Boolean, default=False)
 
     document = relationship("Document", back_populates="daily_targets")
+    student = relationship("Student", back_populates="daily_targets")
 
 
 class Completion(Base):
