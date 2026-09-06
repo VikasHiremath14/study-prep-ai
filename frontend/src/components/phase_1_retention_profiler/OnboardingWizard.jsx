@@ -269,7 +269,7 @@ export default function OnboardingWizard({ initialStudentData, onBackToProfile, 
     },
     reel_watches: [],
     series_habits: [
-      { title: 'Breaking Bad', status: 'completed' },
+      { title: 'Cosmos', status: 'completed' },
       { title: 'Dark', status: 'completed' }
     ],
     self_report: {
@@ -334,7 +334,7 @@ export default function OnboardingWizard({ initialStudentData, onBackToProfile, 
         { clip_id: "reel_3", title: "80/20 Algorithmic Logic", clip_type: "long", duration_seconds: 45, watched_seconds: 42, completion_status: "full", skipped: false }
       ],
       series_habits: formData.series_habits?.length > 0 ? formData.series_habits : [
-        { title: "Breaking Bad", status: "completed" },
+        { title: "Cosmos", status: "completed" },
         { title: "Dark", status: "completed" }
       ],
       self_report: formData.self_report || {

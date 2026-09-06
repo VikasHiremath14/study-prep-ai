@@ -791,29 +791,29 @@ CURATED_TOPIC_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ]
     },
 
-    # MEDIA, FILM & LITERATURE STUDIES (e.g. Breaking Bad, Character Arcs, Narrative Structure)
+    # MEDIA, FILM & LITERATURE STUDIES (Character Arcs, Dramatic Downfall, Narrative Structure)
     "character_analysis": {
         "domain": "Media Studies & Literature: Character Analysis",
         "topic": "Character Arcs, Antiheroes & Moral Deterioration",
         "page_analysis": "Analyzes protagonist character trajectories, moral compromise, psychological rationalization, and narrative catalyst dynamics.",
-        "youtube_search_query": "Walter White character study moral decline breaking bad video essay",
+        "youtube_search_query": "Literary character study moral decline antihero tragedy video essay",
         "youtube_videos": [
             {
-                "title": "The Transformation of Walter White: A Psychological Study",
+                "title": "The Transformation of the Tragic Hero: A Psychological Study",
                 "channel": "Lessons from the Screenplay",
                 "youtube_id": "o_GYu8l2X7U",
                 "duration": "14m",
                 "level": "Narrative Masterclass"
             },
             {
-                "title": "How Breaking Bad Crafts the Perfect Anti-Hero",
+                "title": "How Dramatic Literature Crafts the Perfect Anti-Hero",
                 "channel": "The Take",
                 "youtube_id": "M7lc1UVf-VE",
                 "duration": "16m",
                 "level": "Character Breakdown"
             },
             {
-                "title": "Tragic Flaws and the Downfall of Heisenberg",
+                "title": "Tragic Flaws and the Downfall of Modern Protagonists",
                 "channel": "Like Stories of Old",
                 "youtube_id": "K4TOrB7at0Y",
                 "duration": "22m",
@@ -822,16 +822,16 @@ CURATED_TOPIC_TAXONOMY: Dict[str, Dict[str, Any]] = {
         ],
         "websites": [
             {
-                "title": "Wikipedia: Walter White (Breaking Bad)",
-                "url": "https://en.wikipedia.org/wiki/Walter_White_(Breaking_Bad)",
-                "source": "Wikipedia",
-                "type": "Character Profile & Reception"
-            },
-            {
                 "title": "Britannica: Tragedy and the Antihero in Modern Drama",
                 "url": "https://www.britannica.com/art/antihero",
                 "source": "Encyclopedia Britannica",
                 "type": "Literary Reference"
+            },
+            {
+                "title": "Stanford Encyclopedia of Philosophy: Tragedy and Dramatic Catharsis",
+                "url": "https://plato.stanford.edu/entries/tragedy/",
+                "source": "Stanford Encyclopedia of Philosophy",
+                "type": "Philosophical Foundation"
             }
         ]
     },
@@ -1038,8 +1038,8 @@ def _detect_taxonomy_match(page_text: str, document_title: str) -> Optional[str]
     elif any(k in text_lower for k in ["kirchhoff", "kvl", "kcl", "thevenin", "norton", "ohm's law", "rlc circuit", "mesh current"]):
         return "circuits_ee"
 
-    # CS & Software
-    elif any(k in text_lower for k in ["walter white", "heisenberg", "jesse pinkman", "gus fring", "saul goodman", "breaking bad", "methamphetamine", "character arc", "antihero", "tragic flaw"]):
+    # Dramatic Literature & Character Study
+    elif any(k in text_lower for k in ["character arc", "antihero", "tragic flaw", "moral decline", "protagonist downfall", "hubris", "catharsis", "dramatic literature"]):
         return "character_analysis"
     elif any(k in text_lower for k in ["amortized", "dynamic array", "geometric doubling", "capacity expansion"]):
         return "amortized"

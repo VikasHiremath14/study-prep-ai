@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 
-export default function BreakingBadLoader({ message = "Synthesizing Circadian Bio-Rhythm Formulas...", durationMs = 1800, onComplete }) {
+export default function CognitiveLoader({ message = "Synthesizing Circadian Bio-Rhythm Formulas...", durationMs = 1800, onComplete }) {
   const [dots, setDots] = useState("");
+  const onCompleteRef = React.useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     const dotInterval = setInterval(() => {
       setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
-    }, 400);
+    }, 350);
 
     const timer = setTimeout(() => {
-      if (onComplete) onComplete();
+      if (onCompleteRef.current) {
+        onCompleteRef.current();
+      }
     }, durationMs);
 
     return () => {
       clearInterval(dotInterval);
       clearTimeout(timer);
     };
-  }, [durationMs, onComplete]);
+  }, [durationMs]);
 
   return (
     <div style={{
@@ -57,7 +61,7 @@ export default function BreakingBadLoader({ message = "Synthesizing Circadian Bi
         C₁₀H₁₅N &bull; 149.24 g/mol &bull; [Kr] 4d¹⁰ 5s² &bull; SYNAPSE.CALIB.v2
       </div>
 
-      {/* Breaking Bad Style Periodic Table Elements Row */}
+      {/* Periodic Table Science Elements Row: [St]udy [Pr]ep [Ai] */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -159,7 +163,7 @@ export default function BreakingBadLoader({ message = "Synthesizing Circadian Bi
         </div>
       </div>
 
-      {/* Chemical Smoke Progress Bar */}
+      {/* Progress Bar */}
       <div style={{
         width: '320px',
         height: '4px',

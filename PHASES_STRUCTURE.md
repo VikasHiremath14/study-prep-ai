@@ -14,7 +14,7 @@ AGENTIC AI PROJECT/
 │       │   ├── phase_0_auth_setup/                   # Phase 0: Auth & Workspace Setup
 │       │   │   ├── AuthPage.jsx                      # Email & Password authentication
 │       │   │   ├── ProfileSetupPage.jsx              # Student name & education level intake
-│       │   │   ├── BreakingBadLoader.jsx             # Iconic chemical transition overlay
+│       │   │   ├── CognitiveLoader.jsx               # Periodic table science transition overlay
 │       │   │   ├── BackendStatus.jsx                 # Live health & DB connection badge
 │       │   │   ├── DevShortcutsBar.jsx               # Rapid jump bar across phases
 │       │   │   ├── AgentMatrix.jsx                   # Multi-agent visual overview

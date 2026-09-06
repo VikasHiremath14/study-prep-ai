@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   AuthPage, 
   ProfileSetupPage, 
-  BreakingBadLoader, 
+  CognitiveLoader, 
   DevShortcutsBar,
   StudentRecordsModal 
 } from './components/phase_0_auth_setup';
@@ -34,8 +34,8 @@ export default function App() {
   const [activeDocument, setActiveDocument] = useState(null);
   const [allDocuments, setAllDocuments] = useState([]);
 
-  // Breaking Bad Loader Overlay State
-  const [showBreakingBadLoader, setShowBreakingBadLoader] = useState(false);
+  // Cognitive Transition Loader Overlay State
+  const [showCognitiveLoader, setShowCognitiveLoader] = useState(false);
   const [loaderMessage, setLoaderMessage] = useState("Synthesizing Circadian Bio-Rhythm Formulas...");
   const [postLoaderAction, setPostLoaderAction] = useState(null);
 
@@ -66,13 +66,13 @@ export default function App() {
     setCurrentView('auth');
   }, []);
 
-  // Trigger Breaking Bad chemical intro loading animation
-  const triggerBreakingBadTransition = (msg, targetView, callback = null) => {
+  // Trigger cognitive transition loading animation
+  const triggerCognitiveTransition = (msg, targetView, callback = null) => {
     setLoaderMessage(msg);
-    setShowBreakingBadLoader(true);
+    setShowCognitiveLoader(true);
     setPostLoaderAction(() => {
       return () => {
-        setShowBreakingBadLoader(false);
+        setShowCognitiveLoader(false);
         setCurrentView(targetView);
         if (callback) callback();
       };
@@ -132,13 +132,13 @@ export default function App() {
 
     if (hasExistingRecords && !authData.isNewUser) {
       // Old user with existing records: skip Tell us about yourself & jump directly to Timetable!
-      triggerBreakingBadTransition(
+      triggerCognitiveTransition(
         `Welcome Back, ${mergedProfile.name}! Loading Circadian Timetable...`,
         "scheduler"
       );
     } else {
       // New user: proceed to Tell us about yourself (profile setup)
-      triggerBreakingBadTransition(
+      triggerCognitiveTransition(
         "Initializing Student Cognitive Workspace...",
         "profile_setup"
       );
@@ -159,7 +159,7 @@ export default function App() {
       localStorage.setItem('study_prep_student', JSON.stringify(merged));
     } catch (e) {}
 
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Synthesizing Neurocognitive Battery & SART Matrices...",
       "retention_wizard"
     );
@@ -179,7 +179,7 @@ export default function App() {
       localStorage.setItem('study_prep_student', JSON.stringify(merged));
     } catch (e) {}
 
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Calibrating Circadian Timetable & Synaptic Pacing Formulas...",
       "scheduler"
     );
@@ -192,7 +192,7 @@ export default function App() {
       if (scheduleResult.schedule) setTimetableData(scheduleResult.schedule);
       if (scheduleResult.subjects) setSelectedSubjects(scheduleResult.subjects);
     }
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Initializing Semantic Vector Indexing & Ingestion Engine for Scheduled Subjects...",
       "ingestion"
     );
@@ -208,7 +208,7 @@ export default function App() {
       setAllDocuments(docBundle ? [docBundle] : []);
     }
     
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Synchronizing Real-Time Laptop Clock & Active Reader...",
       "reader"
     );
@@ -234,7 +234,7 @@ export default function App() {
     };
     setCurrentUser(devUser);
     setStudentProfile(devProfile);
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Developer Fast-Forward: Calibrating Circadian Timetable...",
       "scheduler"
     );
@@ -271,7 +271,7 @@ export default function App() {
     setStudentProfile(devProfile);
     setTimetableData(devSchedule);
     setSelectedSubjects(["Data Structures & Algorithms", "Operating Systems", "Computer Networks"]);
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Developer Fast-Forward: Launching Course Material Ingestion...",
       "ingestion"
     );
@@ -333,7 +333,7 @@ export default function App() {
     setStudentProfile(devProfile);
     setActiveDocument(devDocDSA);
     setAllDocuments([devDocDSA, devDocOS]);
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       "Developer Fast-Forward: Launching Active Reader...",
       "reader"
     );
@@ -384,7 +384,7 @@ export default function App() {
     setAllDocuments([]);
     setForceRetakeExam(true);
 
-    triggerBreakingBadTransition(
+    triggerCognitiveTransition(
       `All Study Records Cleared! Launching Fresh Retention Assessment for ${preservedName}...`,
       "retention_wizard"
     );
@@ -427,20 +427,20 @@ export default function App() {
         onRetakeAssessment={() => {
           setShowStudentRecordsModal(false);
           setForceRetakeExam(true);
-          triggerBreakingBadTransition(
+          triggerCognitiveTransition(
             "Launching Neurocognitive Retention Assessment Battery...",
             "retention_wizard"
           );
         }}
       />
 
-      {/* Breaking Bad Iconic Chemical Intro Loader Overlay */}
-      {showBreakingBadLoader && (
-        <BreakingBadLoader
+      {/* Cognitive Transition Loader Overlay */}
+      {showCognitiveLoader && (
+        <CognitiveLoader
           message={loaderMessage}
           durationMs={1500}
           onComplete={() => {
-            setShowBreakingBadLoader(false);
+            setShowCognitiveLoader(false);
             if (typeof postLoaderAction === 'function') {
               postLoaderAction();
             }
@@ -593,7 +593,7 @@ export default function App() {
         overflow: 'hidden'
       }}>
         
-        {/* Step 0: Auth Page with Cinematic Breaking Bad Desert Background */}
+        {/* Step 0: Auth Page with Cinematic Atmospheric Background */}
         {currentView === 'auth' && (
           <div style={{
             position: 'relative',
@@ -612,7 +612,7 @@ export default function App() {
               left: '-4%',
               width: '108%',
               height: '108%',
-              backgroundImage: 'url(/breaking_bad_bg.png)',
+              backgroundImage: 'url(/cinematic_bg.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center 45%',
               zIndex: 0,
@@ -620,7 +620,7 @@ export default function App() {
               imageRendering: 'high-quality',
               WebkitBackfaceVisibility: 'hidden',
               transform: 'translate3d(0, 0, 0)'
-            }} className="bb-bg-cinematic" />
+            }} className="atmospheric-bg-cinematic" />
 
             {/* Dark Atmospheric HDR Vignette & Depth Overlay */}
             <div style={{
@@ -631,8 +631,8 @@ export default function App() {
               pointerEvents: 'none'
             }} />
 
-            {/* Drifting Chemical Smoke Particles */}
-            <div className="bb-smoke-particle" style={{
+            {/* Drifting Ambient Atmosphere Particles */}
+            <div className="ambient-particle-drift" style={{
               bottom: '-10%',
               left: '10%',
               width: '450px',
@@ -641,7 +641,7 @@ export default function App() {
               animationDelay: '0s',
               zIndex: 2
             }} />
-            <div className="bb-smoke-particle" style={{
+            <div className="ambient-particle-drift" style={{
               bottom: '-15%',
               right: '15%',
               width: '500px',
@@ -650,7 +650,7 @@ export default function App() {
               animationDelay: '6s',
               zIndex: 2
             }} />
-            <div className="bb-smoke-particle" style={{
+            <div className="ambient-particle-drift" style={{
               bottom: '-5%',
               left: '45%',
               width: '400px',

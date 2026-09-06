@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Tv, Plus, Trash2, CheckCircle2, Clock, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const SUGGESTIONS = [
-  'Breaking Bad', 'Stranger Things', 'Chernobyl', 'Dark', 
+  'Cosmos', 'Stranger Things', 'Chernobyl', 'Dark', 
   'Game of Thrones', 'Money Heist', 'One Piece', 'Interstellar'
 ];
 

@@ -218,8 +218,8 @@ CREATE INDEX IF NOT EXISTS idx_quiz_attempts_student ON quiz_attempts(student_id
 CREATE TABLE IF NOT EXISTS companion_persona (
     id SERIAL PRIMARY KEY,
     student_id INTEGER UNIQUE NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    character_name VARCHAR(100) NOT NULL DEFAULT 'Walter White',
-    source_title VARCHAR(150) DEFAULT 'Breaking Bad',
+    character_name VARCHAR(100) NOT NULL DEFAULT 'Aristotle',
+    source_title VARCHAR(150) DEFAULT 'Classical Philosophy',
     tone_description TEXT,
     archetype VARCHAR(50) DEFAULT 'cheerful_mentor',
     color_theme VARCHAR(50) DEFAULT 'emerald',

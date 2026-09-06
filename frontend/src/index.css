@@ -286,8 +286,8 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 40;
 }
 
-/* Breaking Bad Cinematic Background Animations */
-@keyframes bb-desert-kenburns {
+/* Atmospheric Cinematic Background Animations */
+@keyframes atmospheric-kenburns {
   0% {
     transform: scale(1) translate(0%, 0%);
   }
@@ -299,12 +299,13 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.atmospheric-bg-cinematic,
 .bb-bg-cinematic {
-  animation: bb-desert-kenburns 28s ease-in-out infinite alternate;
+  animation: atmospheric-kenburns 28s ease-in-out infinite alternate;
   will-change: transform;
 }
 
-@keyframes bb-smoke-drift {
+@keyframes ambient-particle-drift {
   0% {
     transform: translateY(100%) translateX(-10%) scale(0.8);
     opacity: 0;
@@ -321,11 +322,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.ambient-particle-drift,
 .bb-smoke-particle {
   position: absolute;
   border-radius: 50%;
   filter: blur(40px);
   pointer-events: none;
-  animation: bb-smoke-drift 14s ease-in-out infinite;
+  animation: ambient-particle-drift 14s ease-in-out infinite;
 }
 

@@ -31,7 +31,7 @@
 - 💡 **Instant Line-by-Line AI Tutor**: Highlight any sentence or paragraph to get instant explanations in 4 tutor styles (Socratic, First Principles, Simple ELI5, Exam Cram).
 - 🏆 **Anti-Web Search Quizzes**: Generates passage-specific quizzes that test deep understanding rather than simple memorization (answers cannot be easily googled).
 - 📋 **Student Records Dashboard**: Live dashboard showing your retention score, active timetable, saved notes, bookmarks, daily targets, and quiz attempts.
-- 🎬 **Breaking Bad Cinematic Theme**: Sleek dark-mode interface with atmospheric laboratory aesthetics and smooth transitions.
+- 🎬 **Atmospheric Cinematic Dark Theme**: Sleek dark-mode interface with high-tech science aesthetics and smooth transitions.
 
 ---
 

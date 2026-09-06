@@ -43,12 +43,12 @@ def test_page_references_retrieval(client):
 
 def test_page_references_post_dynamic_analysis(client):
     """Tests that POST /api/reader/references dynamically analyzes page content across disciplines."""
-    # 1. Test Literature/Media character analysis page (e.g. Breaking Bad)
+    # 1. Test Literature/Media character analysis page (e.g. Dramatic Character Study)
     media_res = client.post("/api/reader/references", json={
         "document_id": 1,
         "page_number": 1,
-        "page_text": "Walter White is a high school chemistry teacher who starts cooking methamphetamine as Heisenberg to secure his family financial future. Jesse Pinkman is his former student. Hank Schrader is a DEA agent. Gus Fring is a drug lord.",
-        "document_title": "Breaking Bad Character Study"
+        "page_text": "The tragic protagonist undergoes a profound moral decline driven by hubris and an internal character arc. As an antihero with a fatal tragic flaw, the narrative catalyst explores catharsis and psychological rationalization.",
+        "document_title": "Dramatic Literature & Character Study"
     })
     assert media_res.status_code == 200
     media_data = media_res.json()

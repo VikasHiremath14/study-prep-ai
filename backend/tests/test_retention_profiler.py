@@ -39,7 +39,7 @@ def test_high_focus_vs_low_focus_scoring():
             ReelClipWatch(clip_id="c3", title="Distributed Consensus", clip_type="long", duration_seconds=45, watched_seconds=45, completion_status="full")
         ],
         series_habits=[
-            SeriesItem(title="Breaking Bad", status="completed"),
+            SeriesItem(title="Cosmos", status="completed"),
             SeriesItem(title="Dark", status="completed")
         ],
         self_report=SelfReportData(
