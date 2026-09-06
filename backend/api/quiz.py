@@ -52,7 +52,7 @@ def submit_anti_web_search_quiz(
     try:
         attempt = QuizAttempt(
             quiz_id=payload.quiz_id or 1,
-            student_id=1,
+            student_id=payload.student_id or 1,
             score=result["score_percent"],
             total_questions=result["total_questions"],
             student_answers=payload.student_answers
@@ -68,6 +68,22 @@ def submit_anti_web_search_quiz(
             if target:
                 target.is_completed = True
 
+        # Closed-Loop Agentic Feedback: Update Contextual Bandit Tutor policy reward
+        try:
+            from backend.agents.tutor_bandit import tutor_bandit_agent
+            score_norm = float(result["score_percent"]) / 100.0
+            bandit_feedback = tutor_bandit_agent.update_reward(
+                pre_quiz_score=0.50,
+                post_quiz_score=score_norm
+            )
+            result["bandit_learning"] = {
+                "status": "reward_updated",
+                "reward_signal": bandit_feedback.get("reward_signal"),
+                "total_cumulative_reward": bandit_feedback.get("total_cumulative_reward")
+            }
+        except Exception:
+            pass
+
         db.commit()
         db.refresh(attempt)
         result["attempt_id"] = attempt.id
@@ -76,6 +92,21 @@ def submit_anti_web_search_quiz(
         result["attempt_id"] = 1
 
     return result
+
+
+@router.post("/bandit-feedback")
+def submit_bandit_tutor_feedback(
+    decision_id: str,
+    pre_score: float = 0.50,
+    post_score: float = 0.85
+):
+    """Explicitly feeds back quiz score improvements to the Contextual Bandit RL engine."""
+    from backend.agents.tutor_bandit import tutor_bandit_agent
+    return tutor_bandit_agent.update_reward(
+        decision_id=decision_id,
+        pre_quiz_score=pre_score,
+        post_quiz_score=post_score
+    )
 
 
 @router.post("/feynman-evaluate")

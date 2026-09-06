@@ -5,7 +5,7 @@ import StepDelayedRecall from './StepDelayedRecall';
 import StepReelSimulation from './StepReelSimulation';
 import StepSelfReport from './StepSelfReport';
 import ProfileResults from './ProfileResults';
-import { Target, Brain, BookOpen, Video, History, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Target, Brain, BookOpen, Video, History, CheckCircle2, ArrowLeft, Sparkles } from 'lucide-react';
 
 const STEPS = [
   { id: 'sart', title: '1. SART Vigilance', icon: Target },
@@ -406,7 +406,7 @@ export default function OnboardingWizard({ initialStudentData, onBackToProfile, 
       
       {/* Top Back to Profile Breadcrumb */}
       {currentStep < 5 && (
-        <div style={{ maxWidth: '840px', margin: '0 auto 18px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ maxWidth: '840px', margin: '0 auto 18px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <button
             onClick={onBackToProfile}
             className="btn btn-secondary"
@@ -415,9 +415,26 @@ export default function OnboardingWizard({ initialStudentData, onBackToProfile, 
             <ArrowLeft size={14} />
             Back to Profile Setup
           </button>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-            Candidate: <strong style={{ color: '#ffffff' }}>{formData.student_name}</strong> ({formData.grade_level})
-          </span>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+              Candidate: <strong style={{ color: '#ffffff' }}>{formData.student_name}</strong> ({formData.grade_level})
+            </span>
+            <button
+              onClick={() => handleSubmitAll(formData)}
+              className="btn btn-primary"
+              style={{
+                padding: '6px 12px',
+                fontSize: '0.76rem',
+                gap: '6px',
+                background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
+                boxShadow: '0 0 15px rgba(99, 102, 241, 0.4)'
+              }}
+            >
+              <Sparkles size={13} />
+              ⚡ Skip Tests &amp; View ML Curve
+            </button>
+          </div>
         </div>
       )}
 

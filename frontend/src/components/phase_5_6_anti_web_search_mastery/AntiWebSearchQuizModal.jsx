@@ -21,56 +21,19 @@ import {
   Volume2
 } from 'lucide-react';
 
-// Web Audio API Synth for Mastery Chimes & Feedback
-function playMasteryChime(isMastered = true) {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const now = ctx.currentTime;
-
-    if (isMastered) {
-      // Ascending triumphant major triad (C5 - E5 - G5 - C6)
-      const freqs = [523.25, 659.25, 783.99, 1046.50];
-      freqs.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-        gain.gain.setValueAtTime(0.2, now + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.5);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.12);
-        osc.stop(now + idx * 0.12 + 0.5);
-      });
-    } else {
-      // Soft gentle reminder chords
-      const freqs = [392.00, 329.63];
-      freqs.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.15);
-        gain.gain.setValueAtTime(0.15, now + idx * 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.15 + 0.4);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now + idx * 0.15);
-        osc.stop(now + idx * 0.15 + 0.4);
-      });
-    }
-  } catch (e) {
-    // Audio context may be restricted before user gesture
-  }
-}
+// Audio silenced
+function playMasteryChime() {}
 
 export default function AntiWebSearchQuizModal({
   isOpen,
   onClose,
+  studentId = 1,
   documentId = 1,
   dayNumber = 1,
   documentTitle = "Academic Textbook",
+  currentPageNum = 1,
+  currentPageText = "",
+  topic = "",
   pageStart = 1,
   pageEnd = 4,
   pagesText = [],
@@ -88,12 +51,45 @@ export default function AntiWebSearchQuizModal({
   const [submissionResult, setSubmissionResult] = useState(null);
 
   // Feynman Explainer Studio State
-  const [feynmanTopic, setFeynmanTopic] = useState("Amortized Complexity & Dynamic Arrays");
+  const [feynmanTopic, setFeynmanTopic] = useState("Academic Foundations & Core Invariants");
   const [feynmanExplanation, setFeynmanExplanation] = useState("");
   const [isEvaluatingFeynman, setIsEvaluatingFeynman] = useState(false);
   const [feynmanResult, setFeynmanResult] = useState(null);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+
+  // Derive Feynman Topic dynamically from page text / document title or prop
+  useEffect(() => {
+    if (!isOpen) return;
+    if (topic && topic !== "Page Academic Concepts" && topic.length > 3) {
+      setFeynmanTopic(topic);
+      return;
+    }
+    const sampleText = currentPageText || (pagesText && pagesText.length > 0 ? pagesText[0] : "");
+    if (sampleText) {
+      const firstLine = sampleText.split('\n')[0].replace(/^#+\s*/, '').trim();
+      if (firstLine && firstLine.length > 5 && firstLine.length < 60) {
+        setFeynmanTopic(firstLine);
+        return;
+      }
+      const lower = sampleText.toLowerCase();
+      if (lower.includes('shift register') || lower.includes('sipo') || lower.includes('piso')) {
+        setFeynmanTopic("Shift Registers & Sequential Timing");
+      } else if (lower.includes('flip-flop') || lower.includes('latch')) {
+        setFeynmanTopic("Flip-Flops & Clock Synchronization");
+      } else if (lower.includes('karnaugh') || lower.includes('k-map') || lower.includes('boolean')) {
+        setFeynmanTopic("Boolean Minimization & Logic Gates");
+      } else if (lower.includes('process control block') || lower.includes('pcb') || lower.includes('context switch')) {
+        setFeynmanTopic("Operating System Context Switching & PCB");
+      } else if (lower.includes('array') || lower.includes('amortized')) {
+        setFeynmanTopic("Amortized Analysis & Dynamic Resizing");
+      } else if (documentTitle) {
+        setFeynmanTopic(`${documentTitle} (Page ${currentPageNum || pageStart})`);
+      }
+    } else if (documentTitle) {
+      setFeynmanTopic(`${documentTitle} (Page ${currentPageNum || pageStart})`);
+    }
+  }, [isOpen, currentPageNum, currentPageText, documentTitle, topic, pagesText]);
 
   // Initialize Speech Recognition for Feynman Voice Explainer
   useEffect(() => {
@@ -148,39 +144,51 @@ export default function AntiWebSearchQuizModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const generateQuiz = async () => {
-      setIsGenerating(true);
-      setSubmissionResult(null);
-      setSelectedAnswers({});
+    let isCancelled = false;
+    setQuizData(null);
+    setIsGenerating(true);
+    setSubmissionResult(null);
+    setSelectedAnswers({});
 
+    const generateQuiz = async () => {
       try {
+        const textPayload = (currentPageText && currentPageText.trim().length > 10)
+          ? [currentPageText]
+          : (pagesText && pagesText.length > 0 ? pagesText : []);
+
         const res = await fetch('/api/quiz/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            document_id: documentId,
-            document_title: documentTitle,
-            pages_text: pagesText,
-            page_start: pageStart,
-            page_end: pageEnd,
-            student_grade: gradeLevel,
+            document_id: documentId || 1,
+            document_title: documentTitle || "Academic Textbook",
+            pages_text: textPayload,
+            page_start: currentPageNum || pageStart || 1,
+            page_end: currentPageNum || pageEnd || 1,
+            student_grade: gradeLevel || "engineering",
             num_questions: 3
           })
         });
 
-        if (res.ok) {
+        if (res.ok && !isCancelled) {
           const data = await res.json();
           setQuizData(data.quiz_data);
         }
       } catch (err) {
         console.error("Quiz generation error:", err);
       } finally {
-        setIsGenerating(false);
+        if (!isCancelled) {
+          setIsGenerating(false);
+        }
       }
     };
 
     generateQuiz();
-  }, [isOpen, documentId, pageStart, pageEnd]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, documentId, currentPageNum, currentPageText, pageStart, pageEnd, documentTitle, gradeLevel]);
 
   if (!isOpen) return null;
 

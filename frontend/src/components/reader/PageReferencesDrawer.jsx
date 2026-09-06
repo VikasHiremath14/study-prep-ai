@@ -29,21 +29,26 @@ export default function PageReferencesDrawer({
   useEffect(() => {
     if (!isOpen) return;
 
+    setReferences(null);
+    setActiveVideo(null);
+    setIsLoading(true);
+
+    let isCancelled = false;
+
     const fetchReferences = async () => {
-      setIsLoading(true);
       try {
         const res = await fetch('/api/reader/references', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            document_id: documentId,
-            page_number: pageNumber,
-            page_text: pageText,
-            document_title: documentTitle
+            document_id: documentId || 1,
+            page_number: pageNumber || 1,
+            page_text: pageText || "",
+            document_title: documentTitle || ""
           })
         });
 
-        if (res.ok) {
+        if (res.ok && !isCancelled) {
           const data = await res.json();
           setReferences(data);
           // Set first video as active player for this page
@@ -56,11 +61,17 @@ export default function PageReferencesDrawer({
       } catch (err) {
         console.error("Error fetching page references:", err);
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchReferences();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isOpen, documentId, pageNumber, pageText, documentTitle]);
 
   if (!isOpen) return null;

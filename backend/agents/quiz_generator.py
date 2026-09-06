@@ -8,6 +8,7 @@ Includes Feynman Technique open-ended explanation evaluation.
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 import json
+import re
 from backend.agents.base import BaseAgent
 from backend.app.llm import llm_service
 
@@ -25,6 +26,7 @@ class GenerateQuizRequest(BaseModel):
 
 class SubmitQuizRequest(BaseModel):
     quiz_id: Optional[int] = 1
+    student_id: Optional[int] = 1
     document_id: Optional[int] = 1
     day_number: Optional[int] = 1
     student_answers: Dict[int, int]  # {question_index: selected_option_index}
@@ -89,51 +91,7 @@ Output strictly valid JSON with the following structure:
         )
 
         if not generated_json or "questions" not in generated_json or len(generated_json["questions"]) == 0:
-            # Deterministic high-yield fallback questions
-            generated_json = {
-                "quiz_title": f"Active Recall Mastery: Pages {payload.page_start}–{payload.page_end}",
-                "questions": [
-                    {
-                        "id": 0,
-                        "question": f"Consider an algorithm running on input of size N. If the asymptotic complexity is strictly Theta(N log N), what is the impact if the input size quadruples (4N)?",
-                        "options": [
-                            "Running time increases by a factor of exactly 4",
-                            "Running time increases by a factor of 4 * (1 + 2 / log2(N))",
-                            "Running time increases exponentially by 16x",
-                            "Running time remains invariant due to cache locality"
-                        ],
-                        "correct_index": 1,
-                        "explanation": "Theta(N log N) scaled by 4 becomes 4N * (log N + log 4) = 4N log N + 8N, yielding a factor of 4 * (1 + 2 / log2 N).",
-                        "concept_tested": "Asymptotic Scaling Mechanics"
-                    },
-                    {
-                        "id": 1,
-                        "question": f"In a dynamic array with doubling capacity, why is the single worst-case reallocation cost O(N) acceptable for high-throughput systems?",
-                        "options": [
-                            "Because memory allocations are always executed in background kernel threads",
-                            "Because the previous N-1 insertions cost only O(1), distributing the aggregate cost to O(1) amortized",
-                            "Because hardware caches automatically eliminate all pointer indirection penalties",
-                            "Because worst-case operations only trigger during system shutdown"
-                        ],
-                        "correct_index": 1,
-                        "explanation": "Amortized analysis proves that the total time to insert N elements is bounded by 2N operations, resulting in O(1) average cost per insertion.",
-                        "concept_tested": "Amortized Complexity"
-                    },
-                    {
-                        "id": 2,
-                        "question": f"During AVL tree insertion, a node is detected with balance factor +2, and its left child has balance factor -1. Which operation restores balance?",
-                        "options": [
-                            "Single Left (LL) Rotation",
-                            "Single Right (RR) Rotation",
-                            "Left-Right (LR) Double Rotation",
-                            "Right-Left (RL) Double Rotation"
-                        ],
-                        "correct_index": 2,
-                        "explanation": "A +2 parent with a -1 child represents an inner zigzag shape, requiring a left rotation on the child followed by a right rotation on the parent (LR Double Rotation).",
-                        "concept_tested": "AVL Balancing Invariants"
-                    }
-                ]
-            }
+            generated_json = self._generate_dynamic_page_fallback_quiz(payload)
 
         return {
             "status": "success",
@@ -141,6 +99,147 @@ Output strictly valid JSON with the following structure:
             "page_start": payload.page_start,
             "page_end": payload.page_end,
             "quiz_data": generated_json
+        }
+
+    def _generate_dynamic_page_fallback_quiz(self, payload: GenerateQuizRequest) -> Dict[str, Any]:
+        """Generates dynamic, page-grounded scenario questions directly from the provided page text."""
+        combined_text = " ".join(payload.pages_text) if payload.pages_text else ""
+        title = payload.document_title or "Academic Material"
+        page_num = payload.page_start or 1
+
+        # Extract sentences from page text
+        sentences = [s.strip() for s in re.split(r'[.!?]\s+', combined_text) if len(s.strip()) > 25]
+
+        # Domain-aware question patterns if matching keywords found
+        text_lower = (combined_text + " " + title).lower()
+        questions = []
+
+        if any(w in text_lower for w in ["shift register", "sipo", "piso", "siso", "pipo", "flip-flop", "d flip-flop"]):
+            questions.append({
+                "id": 0,
+                "question": f"In a Serial-In Parallel-Out (SIPO) shift register on Page {page_num}, how many clock cycles are required to load an N-bit word before it is accessible in parallel?",
+                "options": [
+                    "1 clock cycle",
+                    "Exactly N clock cycles",
+                    "N - 1 clock cycles",
+                    "2^N clock cycles"
+                ],
+                "correct_index": 1,
+                "explanation": "In a SIPO register, each bit shifts in serially on consecutive clock pulses, requiring exactly N clock cycles to load all N bits.",
+                "concept_tested": "SIPO Shift Register Timing"
+            })
+            questions.append({
+                "id": 1,
+                "question": "What is the primary function of cascading flip-flops in sequential hardware circuits?",
+                "options": [
+                    "To invert analog voltages into pulse-width signals",
+                    "To transfer and synchronize binary data across discrete clock intervals",
+                    "To bypass combinatorial propagation delays completely",
+                    "To convert static RAM cells into dynamic refresh registers"
+                ],
+                "correct_index": 1,
+                "explanation": "Cascaded flip-flops form sequential memory elements that shift and synchronize data on shared or gated clock signals.",
+                "concept_tested": "Sequential Circuit Synchronization"
+            })
+        elif any(w in text_lower for w in ["process control block", "pcb", "context switch", "kernel", "operating system"]):
+            questions.append({
+                "id": 0,
+                "question": f"During an operating system context switch on Page {page_num}, which critical structure preserves CPU register states and memory pointers?",
+                "options": [
+                    "Translation Lookaside Buffer (TLB)",
+                    "Process Control Block (PCB)",
+                    "Direct Memory Access (DMA) Controller",
+                    "Interrupt Vector Mask"
+                ],
+                "correct_index": 1,
+                "explanation": "The PCB stores the program counter, CPU registers, stack pointers, and scheduling state when transitioning between processes.",
+                "concept_tested": "Process Context Switching"
+            })
+            questions.append({
+                "id": 1,
+                "question": "Why does switching execution from User Mode to Kernel Mode incur a performance overhead?",
+                "options": [
+                    "Hardware timers must re-calibrate the CPU bus frequency",
+                    "The system must execute a trap instruction, save state registers, and potentially flush caches",
+                    "All heap memory allocations are instantly cleared",
+                    "Kernel mode operates at half the CPU clock multiplier"
+                ],
+                "correct_index": 1,
+                "explanation": "Kernel traps require state preservation, privilege elevation, and often invalidate cache lines or TLB entries.",
+                "concept_tested": "Kernel Privilege Transitions"
+            })
+        elif any(w in text_lower for w in ["asymptotic", "big-o", "theta", "omega", "complexity"]):
+            questions.append({
+                "id": 0,
+                "question": f"On Page {page_num}, what distinguishes Theta Θ(g(n)) notation from Big-O O(g(n)) notation in algorithmic analysis?",
+                "options": [
+                    "Theta defines only the loose upper bound",
+                    "Theta defines a tight asymptotic bound (both upper and lower), while Big-O provides only the asymptotic upper bound",
+                    "Theta is strictly applicable to recursive algorithms",
+                    "Big-O accounts for hardware cache locality while Theta ignores it"
+                ],
+                "correct_index": 1,
+                "explanation": "Theta bounds the function within positive constants c1*g(n) and c2*g(n) for sufficiently large n, establishing an exact tight growth rate.",
+                "concept_tested": "Asymptotic Bounds Definition"
+            })
+            questions.append({
+                "id": 1,
+                "question": "If an algorithm's worst-case time complexity is O(N log N), what is guaranteed about its behavior on arbitrary input of size N?",
+                "options": [
+                    "It will execute in exactly N steps under all conditions",
+                    "Its execution time will grow no faster than c * N log N for large N",
+                    "Its execution time will never fall below N^2",
+                    "It cannot be executed in parallel threads"
+                ],
+                "correct_index": 1,
+                "explanation": "Big-O specifies the asymptotic upper ceiling on execution time for all inputs of size N.",
+                "concept_tested": "Upper Bound Invariants"
+            })
+
+        # If not matched or need more questions, extract from actual sentences of the page!
+        if len(questions) < payload.num_questions and len(sentences) > 0:
+            for s_idx, sent in enumerate(sentences[:payload.num_questions - len(questions) + 1]):
+                if len(sent) < 30:
+                    continue
+                q_id = len(questions)
+                # Formulate a page-specific conceptual query
+                q_text = f"Based on the concepts presented on Page {page_num} of {title}: What is the core principle governing '{sent[:60]}...'?"
+                correct_opt = sent if len(sent) < 100 else sent[:95] + "..."
+                questions.append({
+                    "id": q_id,
+                    "question": q_text,
+                    "options": [
+                        f"It operates independently of the constraints defined in {title}",
+                        correct_opt,
+                        f"It requires continuous manual re-calibration across every execution cycle",
+                        f"It represents an outdated legacy approach that violates structural invariants"
+                    ],
+                    "correct_index": 1,
+                    "explanation": f"As detailed on Page {page_num}: '{sent}'. This principle maintains consistency across the curriculum.",
+                    "concept_tested": f"Page {page_num} Core Mechanism"
+                })
+                if len(questions) >= payload.num_questions:
+                    break
+
+        # Fallback if text is empty
+        if len(questions) == 0:
+            questions.append({
+                "id": 0,
+                "question": f"What is the foundational invariant established in '{title}' on Page {page_num}?",
+                "options": [
+                    "Arbitrary uncoordinated execution without structural constraints",
+                    f"Systematic conceptual formulation grounded in the principles of Page {page_num}",
+                    "Hardware-dependent hardcoding that fails across alternate platforms",
+                    "Unverified heuristics that bypass mathematical guarantees"
+                ],
+                "correct_index": 1,
+                "explanation": f"Page {page_num} of {title} establishes rigorous foundations that ensure systematic understanding.",
+                "concept_tested": "Foundational Invariant"
+            })
+
+        return {
+            "quiz_title": f"Active Recall Mastery: Page {page_num} ({title})",
+            "questions": questions[:payload.num_questions]
         }
 
     def evaluate_submission(self, payload: SubmitQuizRequest) -> Dict[str, Any]:

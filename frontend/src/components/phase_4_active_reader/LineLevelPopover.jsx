@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   Lightbulb, 
@@ -9,30 +9,56 @@ import {
   X, 
   Send, 
   Check,
-  Highlighter,
+  ChevronDown,
   Mic,
   MicOff
 } from 'lucide-react';
 
+const EXPLAIN_MODES = [
+  { id: 'agentic', label: 'Auto Agent', icon: '⚡', desc: 'RL Bandit Adaptive' },
+  { id: 'eli5', label: 'ELI5', icon: '💡', desc: 'Simple Intuitive Analogy' },
+  { id: 'deep_dive', label: 'Deep Dive', icon: '📖', desc: 'Rigorous Tech Breakdown' },
+  { id: 'exam_crux', label: 'Exam Crux', icon: '⚡', desc: 'High-Yield Exam Points' }
+];
+
 export default function LineLevelPopover({
   selectedText,
+  surroundingContext = "",
   pageNumber,
   documentId,
   documentTitle = "Academic Textbook",
   gradeLevel = "engineering",
+  studentId = 1,
   position = { top: 100, left: 200 },
   onClose,
   onSaveNote
 }) {
-  const [activeTab, setActiveTab] = useState('eli5'); // 'eli5' | 'deep_dive' | 'exam_crux' | 'ask_doubt' | 'note'
+  const [activeTab, setActiveTab] = useState('explain'); // 'explain' | 'ask_doubt' | 'note'
+  const [explainMode, setExplainMode] = useState('agentic'); // 'agentic' | 'eli5' | 'deep_dive' | 'exam_crux'
+  const [showModeMenu, setShowModeMenu] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [explanationResult, setExplanationResult] = useState(null);
+  const [banditDecision, setBanditDecision] = useState(null);
   const [customQuestion, setCustomQuestion] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [doubtAnswer, setDoubtAnswer] = useState(null);
   const [noteContent, setNoteContent] = useState("");
   const [highlightColor, setHighlightColor] = useState("emerald"); // emerald, amber, cyan, purple
   const [noteSaved, setNoteSaved] = useState(false);
+
+  const menuRef = useRef(null);
+
+  // Close dropdown menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowModeMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Web Speech API Voice Recognition
   const toggleSpeechRecognition = () => {
@@ -64,7 +90,7 @@ export default function LineLevelPopover({
       };
 
       recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+        console.error("Speech error:", event.error);
         setIsListening(false);
       };
 
@@ -79,10 +105,49 @@ export default function LineLevelPopover({
     }
   };
 
-  const fetchExplanation = async (mode) => {
-    setActiveTab(mode);
+  const fetchAgenticExplanation = async () => {
+    setActiveTab('explain');
+    setExplainMode('agentic');
     setLoading(true);
     setExplanationResult(null);
+    setBanditDecision(null);
+    try {
+      const res = await fetch('/api/reader/agentic-explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          document_id: documentId || 1,
+          page_number: pageNumber,
+          selected_text: selectedText,
+          surrounding_context: surroundingContext || selectedText,
+          grade_level: gradeLevel,
+          concept_difficulty: "medium",
+          document_title: documentTitle,
+          student_id: studentId || 1
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setExplanationResult(data.explanation);
+        setBanditDecision(data.bandit_decision);
+      } else {
+        setExplanationResult("Could not generate agentic explanation. Falling back to default.");
+      }
+    } catch (e) {
+      console.error("Agentic error:", e);
+      setExplanationResult("Connection issue. Please verify backend.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchExplanation = async (mode) => {
+    setActiveTab('explain');
+    setExplainMode(mode);
+    setLoading(true);
+    setExplanationResult(null);
+    setBanditDecision(null);
     try {
       const res = await fetch('/api/reader/explain', {
         method: 'POST',
@@ -91,9 +156,11 @@ export default function LineLevelPopover({
           document_id: documentId || 1,
           page_number: pageNumber,
           selected_text: selectedText,
+          surrounding_context: surroundingContext || selectedText,
           grade_level: gradeLevel,
           mode: mode,
-          document_title: documentTitle
+          document_title: documentTitle,
+          student_id: studentId || 1
         })
       });
 
@@ -111,6 +178,17 @@ export default function LineLevelPopover({
     }
   };
 
+  // Auto-fetch explanation when selection changes or popover opens
+  useEffect(() => {
+    if (selectedText) {
+      if (explainMode === 'agentic') {
+        fetchAgenticExplanation();
+      } else {
+        fetchExplanation(explainMode);
+      }
+    }
+  }, [selectedText, pageNumber, documentId]);
+
   const handleAskDoubt = async () => {
     if (!customQuestion.trim()) return;
     setLoading(true);
@@ -123,9 +201,11 @@ export default function LineLevelPopover({
           document_id: documentId || 1,
           page_number: pageNumber,
           selected_text: selectedText,
+          surrounding_context: surroundingContext || selectedText,
           question: customQuestion.trim(),
           grade_level: gradeLevel,
-          document_title: documentTitle
+          document_title: documentTitle,
+          student_id: studentId || 1
         })
       });
 
@@ -142,26 +222,38 @@ export default function LineLevelPopover({
 
   const handleSaveMarginNote = async () => {
     try {
+      const payload = {
+        student_id: studentId || 1,
+        document_id: documentId || 1,
+        page_number: pageNumber,
+        selected_text: selectedText,
+        note_text: noteContent.trim() || "Highlighted Key Excerpt",
+        color_tag: highlightColor,
+        is_bookmark: false
+      };
+
       const res = await fetch('/api/reader/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          document_id: documentId || 1,
-          page_number: pageNumber,
-          selected_text: selectedText,
-          note_text: noteContent.trim() || "Highlighted Key Excerpt",
-          color_tag: highlightColor
-        })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
         const data = await res.json();
         setNoteSaved(true);
-        if (onSaveNote) onSaveNote(data);
+        if (onSaveNote) {
+          onSaveNote({
+            ...payload,
+            id: data.note_id || data.id || Date.now(),
+            created_at: new Date().toISOString()
+          });
+        }
 
-        // Update local storage so student records modal is immediately updated
+        // Save in local storage cache (both user-scoped and global)
         try {
-          const prev = JSON.parse(localStorage.getItem('study_prep_notes') || '[]');
+          const userKey = studentId || 'default';
+          const prevScoped = JSON.parse(localStorage.getItem(`study_prep_notes_${userKey}`) || '[]');
+          const prevGlobal = JSON.parse(localStorage.getItem('study_prep_notes') || '[]');
           const newEntry = {
             id: data.note_id || data.id || Date.now(),
             document_id: documentId || 1,
@@ -173,7 +265,8 @@ export default function LineLevelPopover({
             is_bookmark: false,
             created_at: new Date().toISOString()
           };
-          localStorage.setItem('study_prep_notes', JSON.stringify([newEntry, ...prev]));
+          localStorage.setItem(`study_prep_notes_${userKey}`, JSON.stringify([newEntry, ...prevScoped]));
+          localStorage.setItem('study_prep_notes', JSON.stringify([newEntry, ...prevGlobal]));
         } catch (e) {}
 
         setTimeout(() => {
@@ -184,6 +277,8 @@ export default function LineLevelPopover({
       console.error("Note save error:", e);
     }
   };
+
+  const currentModeInfo = EXPLAIN_MODES.find(m => m.id === explainMode) || EXPLAIN_MODES[0];
 
   return (
     <div style={{
@@ -246,90 +341,149 @@ export default function LineLevelPopover({
         "{selectedText}"
       </div>
 
-      {/* Action Mode Tabs */}
+      {/* Action Mode Tabs: Unified Explain Button with Dropdown + Ask + Note */}
       <div style={{
         display: 'flex',
-        gap: '4px',
-        background: 'rgba(0, 0, 0, 0.4)',
-        padding: '3px',
-        borderRadius: '8px',
+        gap: '6px',
+        background: 'rgba(0, 0, 0, 0.45)',
+        padding: '4px',
+        borderRadius: '10px',
         marginBottom: '14px',
-        overflowX: 'auto'
+        position: 'relative'
       }}>
-        <button
-          onClick={() => fetchExplanation('eli5')}
-          style={{
-            flex: 1,
-            padding: '6px 8px',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.74rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: activeTab === 'eli5' ? '#10b981' : 'transparent',
-            color: activeTab === 'eli5' ? '#030712' : 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
-          }}
-        >
-          <Lightbulb size={12} />
-          ELI5
-        </button>
+        
+        {/* Unified Explain Button with Dropdown Selector */}
+        <div ref={menuRef} style={{ flex: 1.5, position: 'relative', display: 'flex' }}>
+          <button
+            onClick={() => {
+              setActiveTab('explain');
+              setShowModeMenu(false);
+              if (explainMode === 'agentic') fetchAgenticExplanation();
+              else fetchExplanation(explainMode);
+            }}
+            style={{
+              flex: 1,
+              padding: '7px 10px',
+              borderRadius: showModeMenu ? '8px 0 0 8px' : '8px',
+              border: 'none',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              background: activeTab === 'explain' ? 'linear-gradient(135deg, #6366f1, #06b6d4)' : 'transparent',
+              color: activeTab === 'explain' ? '#ffffff' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: activeTab === 'explain' ? '0 0 12px rgba(99, 102, 241, 0.4)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+            title="Click to explain with active mode"
+          >
+            <Sparkles size={13} />
+            <span>{currentModeInfo.icon} {currentModeInfo.label}</span>
+          </button>
 
-        <button
-          onClick={() => fetchExplanation('deep_dive')}
-          style={{
-            flex: 1,
-            padding: '6px 8px',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.74rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: activeTab === 'deep_dive' ? '#06b6d4' : 'transparent',
-            color: activeTab === 'deep_dive' ? '#030712' : 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
-          }}
-        >
-          <BookOpen size={12} />
-          Deep Dive
-        </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowModeMenu(!showModeMenu);
+            }}
+            style={{
+              padding: '7px 8px',
+              borderRadius: showModeMenu ? '0 8px 8px 0' : '8px',
+              border: 'none',
+              borderLeft: activeTab === 'explain' ? '1px solid rgba(255,255,255,0.2)' : 'none',
+              cursor: 'pointer',
+              background: activeTab === 'explain' ? 'rgba(99, 102, 241, 0.85)' : 'rgba(255, 255, 255, 0.05)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            title="Choose explanation style (ELI5, Deep Dive, Exam Crux, Auto Agent)"
+          >
+            <ChevronDown size={13} style={{ transform: showModeMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+          </button>
 
-        <button
-          onClick={() => fetchExplanation('exam_crux')}
-          style={{
-            flex: 1,
-            padding: '6px 8px',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '0.74rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: activeTab === 'exam_crux' ? '#fbbf24' : 'transparent',
-            color: activeTab === 'exam_crux' ? '#030712' : 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
-          }}
-        >
-          <Zap size={12} />
-          Exam Crux
-        </button>
+          {/* Mode Dropdown Menu */}
+          {showModeMenu && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              width: '240px',
+              background: 'rgba(15, 23, 42, 0.98)',
+              backdropFilter: 'blur(20px)',
+              border: '1.5px solid rgba(99, 102, 241, 0.5)',
+              borderRadius: '10px',
+              padding: '6px',
+              zIndex: 100,
+              boxShadow: '0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(99,102,241,0.3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px'
+            }}>
+              <div style={{ fontSize: '0.66rem', color: 'var(--text-dim)', padding: '4px 8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Explanation Style:
+              </div>
 
+              {EXPLAIN_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    setExplainMode(m.id);
+                    setShowModeMenu(false);
+                    setActiveTab('explain');
+                    if (m.id === 'agentic') fetchAgenticExplanation();
+                    else fetchExplanation(m.id);
+                  }}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: explainMode === m.id ? '1px solid rgba(99, 102, 241, 0.5)' : '1px solid transparent',
+                    background: explainMode === m.id ? 'rgba(99, 102, 241, 0.25)' : 'transparent',
+                    color: explainMode === m.id ? '#ffffff' : '#cbd5e1',
+                    fontSize: '0.78rem',
+                    fontWeight: explainMode === m.id ? 700 : 500,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    textAlign: 'left',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1rem' }}>{m.icon}</span>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.8rem', color: '#ffffff' }}>
+                        {m.label} {m.id === 'agentic' && <span style={{ fontSize: '0.65rem', color: '#34d399', fontWeight: 700 }}>&bull; Default</span>}
+                      </strong>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>{m.desc}</span>
+                    </div>
+                  </div>
+                  {explainMode === m.id && <Check size={14} color="#34d399" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Ask Tab Button */}
         <button
-          onClick={() => { setActiveTab('ask_doubt'); setExplanationResult(null); }}
+          onClick={() => {
+            setActiveTab('ask_doubt');
+            setShowModeMenu(false);
+            setExplanationResult(null);
+          }}
           style={{
-            flex: 1,
-            padding: '6px 8px',
-            borderRadius: '6px',
+            flex: 0.85,
+            padding: '7px 10px',
+            borderRadius: '8px',
             border: 'none',
-            fontSize: '0.74rem',
+            fontSize: '0.76rem',
             fontWeight: 700,
             cursor: 'pointer',
             background: activeTab === 'ask_doubt' ? '#a855f7' : 'transparent',
@@ -337,21 +491,27 @@ export default function LineLevelPopover({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px'
+            gap: '4px',
+            transition: 'all 0.15s ease'
           }}
         >
-          <HelpCircle size={12} />
+          <HelpCircle size={13} />
           Ask
         </button>
 
+        {/* Note Tab Button */}
         <button
-          onClick={() => { setActiveTab('note'); setExplanationResult(null); }}
+          onClick={() => {
+            setActiveTab('note');
+            setShowModeMenu(false);
+            setExplanationResult(null);
+          }}
           style={{
-            flex: 1,
-            padding: '6px 8px',
-            borderRadius: '6px',
+            flex: 0.85,
+            padding: '7px 10px',
+            borderRadius: '8px',
             border: 'none',
-            fontSize: '0.74rem',
+            fontSize: '0.76rem',
             fontWeight: 700,
             cursor: 'pointer',
             background: activeTab === 'note' ? '#f59e0b' : 'transparent',
@@ -359,29 +519,67 @@ export default function LineLevelPopover({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px'
+            gap: '4px',
+            transition: 'all 0.15s ease'
           }}
         >
-          <Bookmark size={12} />
+          <Bookmark size={13} />
           Note
         </button>
       </div>
 
-      {/* Tab 1, 2, 3: Explanation Output */}
-      {(activeTab === 'eli5' || activeTab === 'deep_dive' || activeTab === 'exam_crux') && (
+      {/* Tab 1: Explanation Output */}
+      {activeTab === 'explain' && (
         <div>
+          {/* Bandit Policy Decision Card */}
+          {banditDecision && explainMode === 'agentic' && (
+            <div style={{
+              marginBottom: '10px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              fontSize: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <span style={{ color: '#818cf8', fontWeight: 700 }}>🤖 RL Bandit Policy: </span>
+                <strong style={{ color: '#ffffff', textTransform: 'capitalize' }}>
+                  {banditDecision.recommended_persona?.replace('_', ' ')}
+                </strong>
+                <span style={{ color: '#94a3b8', marginLeft: '6px' }}>
+                  ({banditDecision.estimated_retention_uplift || '+22% retention uplift'})
+                </span>
+              </div>
+              <span style={{
+                background: banditDecision.is_exploration ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                color: banditDecision.is_exploration ? '#fbbf24' : '#6ee7b7',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '0.68rem',
+                fontWeight: 600
+              }}>
+                {banditDecision.is_exploration ? 'Bandit Explore' : 'Bandit Exploit'}
+              </span>
+            </div>
+          )}
+
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-dim)', fontSize: '0.82rem' }}>
-              ✨ Grounding line against textbook vector chunks...
+            <div style={{ textAlign: 'center', padding: '24px 16px', color: 'var(--text-dim)', fontSize: '0.82rem' }}>
+              <div style={{ marginBottom: '8px', fontSize: '1.2rem' }}>✨</div>
+              Analyzing line with <strong>{currentModeInfo.label}</strong>...
             </div>
           ) : explanationResult ? (
             <div style={{
-              background: 'rgba(0, 0, 0, 0.3)',
+              background: 'rgba(0, 0, 0, 0.35)',
               padding: '12px 14px',
               borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
               fontSize: '0.82rem',
               color: '#f1f5f9',
-              lineHeight: 1.5,
+              lineHeight: 1.55,
               maxHeight: '220px',
               overflowY: 'auto',
               whiteSpace: 'pre-line'
@@ -391,19 +589,19 @@ export default function LineLevelPopover({
           ) : (
             <div style={{ textAlign: 'center', padding: '16px' }}>
               <button
-                onClick={() => fetchExplanation(activeTab)}
+                onClick={explainMode === 'agentic' ? fetchAgenticExplanation : () => fetchExplanation(explainMode)}
                 className="btn btn-primary"
                 style={{ padding: '8px 16px', fontSize: '0.8rem', gap: '6px' }}
               >
                 <Sparkles size={13} />
-                Generate {activeTab.replace('_', ' ').toUpperCase()} Explanation
+                Generate {currentModeInfo.label} Explanation
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Tab 4: Ask Custom Doubt */}
+      {/* Tab 2: Ask Custom Doubt */}
       {activeTab === 'ask_doubt' && (
         <div>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
@@ -484,7 +682,7 @@ export default function LineLevelPopover({
         </div>
       )}
 
-      {/* Tab 5: Highlight & Add Sticky Margin Note */}
+      {/* Tab 3: Highlight & Add Sticky Margin Note */}
       {activeTab === 'note' && (
         <div>
           {/* Highlight Color Picker */}

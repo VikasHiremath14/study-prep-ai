@@ -107,6 +107,89 @@ def get_student_retention_profile(student_id: int, db: Session = Depends(get_db)
     }
 
 
+@router.get("/{student_id}/forgetting-curve")
+def get_student_forgetting_curve(student_id: int, max_hours: float = 168.0, db: Session = Depends(get_db)):
+    """Retrieves trained Half-Life Regression forgetting curve and empirical test data points for a student."""
+    from backend.ml.half_life_regression import hlr_model
+    from backend.db.models import QuizAttempt
+
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    profile = db.query(RetentionProfile).filter(RetentionProfile.student_id == student_id).first()
+    
+    # Extract features from profile or use baseline defaults
+    sart = profile.sustained_focus_score if profile else 0.80
+    wm = profile.distraction_recovery_score if profile else 0.75
+    recall = profile.details.get("signals", {}).get("delayed_recall_retention", {}).get("score", 0.70) if profile and profile.details else 0.70
+    dopamine = profile.reel_watch_score if profile else 0.70
+
+    # Count prior quiz attempts
+    attempts = db.query(QuizAttempt).filter(QuizAttempt.student_id == student_id).all()
+    n_attempts = len(attempts)
+    avg_score = (sum(a.score for a in attempts) / (100.0 * n_attempts)) if n_attempts > 0 else 0.75
+
+    features = hlr_model.extract_features(
+        sart_vigilance=sart,
+        digit_span_wm=wm,
+        delayed_recall_base=recall,
+        dopamine_tolerance=dopamine,
+        repetition_count=max(1, n_attempts),
+        prior_quiz_accuracy=avg_score
+    )
+
+    predicted_half_life = hlr_model.predict_half_life(features)
+    decay_curve = hlr_model.generate_decay_curve(features, max_hours=max_hours, num_points=40)
+
+    # Format empirical quiz points for graph overlay
+    quiz_points = []
+    for i, att in enumerate(attempts):
+        hours_elapsed = (i + 1) * 24.0  # approximate elapsed spacing
+        quiz_points.append({
+            "attempt_id": att.id,
+            "hours_elapsed": hours_elapsed,
+            "actual_score_percent": att.score,
+            "actual_recall_prob": round(att.score / 100.0, 3)
+        })
+
+    return {
+        "status": "success",
+        "student_id": student.id,
+        "student_name": student.name,
+        "predicted_half_life_hours": predicted_half_life,
+        "predicted_half_life_days": round(predicted_half_life / 24.0, 2),
+        "recall_prob_24h": hlr_model.predict_recall_probability(features, 24.0),
+        "recall_prob_48h": hlr_model.predict_recall_probability(features, 48.0),
+        "recall_prob_7d": hlr_model.predict_recall_probability(features, 168.0),
+        "decay_curve": decay_curve,
+        "empirical_quiz_points": quiz_points,
+        "ml_model_info": {
+            "technique": "Duolingo Half-Life Regression (Settles & Meeder 2016)",
+            "metrics": hlr_model.last_metrics,
+            "features_used": hlr_model.FEATURE_NAMES
+        }
+    }
+
+
+@router.get("/ml/diagnostics")
+def get_ml_diagnostics():
+    """Returns Machine Learning validation metrics, loss history, and learned parameter weights."""
+    from backend.ml.half_life_regression import hlr_model
+
+    return {
+        "status": "success",
+        "model_name": "Duolingo Half-Life Regression (HLR)",
+        "scientific_citation": "Settles, B., & Meeder, B. (ACL 2016). 'A Trainable Spaced Repetition Model for Language Learning.'",
+        "mathematical_formula": "p_hat = 2^(-Delta_t / 2^(theta^T * x))",
+        "loss_function": "Regularized L2 Loss with Adam Optimizer",
+        "metrics": hlr_model.last_metrics,
+        "learned_weights": {name: round(float(w), 4) for name, w in zip(hlr_model.FEATURE_NAMES, hlr_model.theta)},
+        "training_epochs": len(hlr_model.training_history),
+        "recent_loss_history": hlr_model.training_history[-20:]
+    }
+
+
 @router.get("")
 def list_students(db: Session = Depends(get_db)):
     """Lists all registered students with summary retention scores."""

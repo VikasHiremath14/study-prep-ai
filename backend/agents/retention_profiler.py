@@ -45,6 +45,7 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from backend.agents.base import BaseAgent
 from backend.app.llm import llm_service
+from backend.ml.half_life_regression import hlr_model
 
 
 # ---------------------------------------------------------
@@ -416,6 +417,33 @@ class RetentionProfilerAgent(BaseAgent):
                 }
             ]
         }
+
+        # -----------------------------------------------------
+        # Machine Learning: Duolingo Half-Life Regression (HLR)
+        # -----------------------------------------------------
+        student_features = hlr_model.extract_features(
+            sart_vigilance=sart_score,
+            digit_span_wm=digit_span_score,
+            delayed_recall_base=recall_score,
+            dopamine_tolerance=reel_score,
+            repetition_count=1,
+            prior_quiz_accuracy=round((recall_score + sart_score) / 2.0, 3)
+        )
+        predicted_half_life = hlr_model.predict_half_life(student_features)
+        decay_curve_points = hlr_model.generate_decay_curve(student_features, max_hours=168.0, num_points=35)
+        ml_model_summary = {
+            "model_name": "Duolingo Half-Life Regression (Settles & Meeder, ACL 2016)",
+            "predicted_half_life_hours": predicted_half_life,
+            "predicted_half_life_days": round(predicted_half_life / 24.0, 2),
+            "recall_prob_24h": hlr_model.predict_recall_probability(student_features, 24.0),
+            "recall_prob_48h": hlr_model.predict_recall_probability(student_features, 48.0),
+            "recall_prob_7d": hlr_model.predict_recall_probability(student_features, 168.0),
+            "model_metrics": hlr_model.last_metrics,
+            "learned_parameters": {name: round(float(w), 4) for name, w in zip(hlr_model.FEATURE_NAMES, hlr_model.theta)},
+            "decay_curve": decay_curve_points
+        }
+
+        breakdown["forgetting_curve_ml"] = ml_model_summary
 
         return breakdown
 

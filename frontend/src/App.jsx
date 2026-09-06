@@ -121,6 +121,19 @@ export default function App() {
       try {
         localStorage.setItem('study_prep_timetable', JSON.stringify(records.latest_schedule));
       } catch (e) {}
+    } else if (authData.isNewUser) {
+      // Brand new user: clear previous timetable from state & localStorage
+      setTimetableData(null);
+      setSelectedSubjects([]);
+      setActiveDocument(null);
+      setAllDocuments([]);
+      try {
+        localStorage.removeItem('study_prep_timetable');
+        localStorage.removeItem('study_prep_subjects');
+        localStorage.removeItem('study_prep_notes');
+        localStorage.removeItem('study_prep_targets');
+        localStorage.removeItem('study_prep_quizzes');
+      } catch (e) {}
     }
 
     const hasExistingRecords = Boolean(
@@ -397,6 +410,16 @@ export default function App() {
       localStorage.removeItem('study_prep_student');
       localStorage.removeItem('study_prep_timetable');
       localStorage.removeItem('study_prep_subjects');
+      localStorage.removeItem('study_prep_notes');
+      localStorage.removeItem('study_prep_targets');
+      localStorage.removeItem('study_prep_quizzes');
+      localStorage.removeItem('study_prep_active_doc');
+      // Clean any user-scoped keys
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('study_prep_')) {
+          localStorage.removeItem(key);
+        }
+      });
     } catch (e) {}
     setCurrentUser(null);
     setStudentProfile(null);
@@ -788,6 +811,9 @@ export default function App() {
             timetableData={timetableData}
             selectedSubjects={selectedSubjects}
             activeProfile={studentProfile}
+            currentUser={currentUser}
+            onOpenRecords={() => setShowStudentRecordsModal(true)}
+            onLogout={handleLogout}
             onBackToIngestion={() => setCurrentView('ingestion')}
             onProceedToQuiz={() => alert("Ready for Anti-Web Search Quiz Generator!")}
           />

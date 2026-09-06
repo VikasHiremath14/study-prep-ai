@@ -66,13 +66,27 @@ const PRESET_CATALOG = {
 
 // Helper to find matching preset key from subject title
 function findMatchingPresetKey(subjectName = "") {
+  if (!subjectName || typeof subjectName !== 'string') return null;
   const nameLower = subjectName.toLowerCase();
   for (const [key, preset] of Object.entries(PRESET_CATALOG)) {
-    if (preset.keywords.some(k => nameLower.includes(k))) {
+    if (preset.keywords && preset.keywords.some(k => nameLower.includes(k.toLowerCase()))) {
       return key;
     }
   }
   return null;
+}
+
+function normalizeSubjectItem(s) {
+  if (!s) return null;
+  if (typeof s === 'string') {
+    return { name: s.replace('📚', '').trim(), difficulty: 'medium', icon: '📚' };
+  }
+  const name = (s.name || s.title || s.subject || s.label || 'Subject').replace('📚', '').trim();
+  return {
+    name: name,
+    difficulty: s.difficulty || 'medium',
+    icon: s.icon || (name.includes('Data') || name.includes('DSA') ? '💻' : (name.includes('OS') || name.includes('Operating') ? '⚡' : (name.includes('Math') ? '📐' : '📚')))
+  };
 }
 
 export default function DocumentIngestionPage({ 
@@ -88,25 +102,25 @@ export default function DocumentIngestionPage({
 
   // Resolve today's subjects from Timetable
   const [subjectsToday, setSubjectsToday] = useState(() => {
-    if (initialSelectedSubjects && initialSelectedSubjects.length > 0) return initialSelectedSubjects;
+    if (initialSelectedSubjects && Array.isArray(initialSelectedSubjects) && initialSelectedSubjects.length > 0) {
+      return initialSelectedSubjects.map(normalizeSubjectItem).filter(Boolean);
+    }
     try {
       const saved = localStorage.getItem('study_prep_subjects');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(normalizeSubjectItem).filter(Boolean);
+        }
+      }
     } catch (e) {}
-    if (timetableData?.slots) {
-      const studySlots = timetableData.slots.filter(s => s.type === 'study');
+    if (timetableData?.slots && Array.isArray(timetableData.slots)) {
+      const studySlots = timetableData.slots.filter(s => s && s.type === 'study');
       if (studySlots.length > 0) {
-        return studySlots.map(s => ({
-          name: s.title.replace('📚', '').trim(),
-          difficulty: s.difficulty || 'medium',
-          icon: s.title.includes('Data') || s.title.includes('DSA') ? '💻' : (s.title.includes('OS') || s.title.includes('Operating') ? '⚡' : (s.title.includes('Math') ? '📐' : '📚'))
-        }));
+        return studySlots.map(normalizeSubjectItem).filter(Boolean);
       }
     }
-    return [
-      { name: 'Data Structures & Algorithmic Analysis', difficulty: 'hard', icon: '💻' },
-      { name: 'Operating Systems: Three Easy Pieces', difficulty: 'hard', icon: '⚡' }
-    ];
+    return [];
   });
 
   // Multi-Material State
@@ -166,12 +180,13 @@ export default function DocumentIngestionPage({
       pacingLabel = "Micro-Comprehension Pacing";
     }
 
+    const gradeKey = (gradeLevel || activeProfile?.grade_level || "engineering").toString().toLowerCase();
     const basePagesPerHour = {
       "10th": 14.0,
       "12th": 11.0,
       "engineering": 8.5,
       "mtech": 6.5
-    }[gradeLevel.toLowerCase()] || 8.5;
+    }[gradeKey] || 8.5;
 
     const dailyPagesRaw = basePagesPerHour * 1.5 * retentionMultiplier;
     const recommendedDailyPages = Math.max(4, Math.round(dailyPagesRaw));
@@ -500,22 +515,47 @@ export default function DocumentIngestionPage({
 
         {/* Dynamic Subject Cards matching whatever user entered in Timetable */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {subjectsToday.map((sub, idx) => {
-            // Check if material is already attached for this subject
-            const attachedMaterial = materialsList.find(m => {
-              if (m.subjectName && m.subjectName.toLowerCase() === sub.name.toLowerCase()) return true;
-              const subNameLower = sub.name.toLowerCase();
-              const matTitleLower = m.title.toLowerCase();
-              if (subNameLower.includes('data') || subNameLower.includes('dsa')) return matTitleLower.includes('data') || matTitleLower.includes('dsa');
-              if (subNameLower.includes('operating') || subNameLower.includes('os')) return matTitleLower.includes('operating') || matTitleLower.includes('os');
-              if (subNameLower.includes('math') || subNameLower.includes('calculus')) return matTitleLower.includes('math') || matTitleLower.includes('calculus');
-              if (subNameLower.includes('network')) return matTitleLower.includes('network');
-              return matTitleLower.includes(subNameLower) || subNameLower.includes(matTitleLower);
-            });
+          {subjectsToday.length === 0 ? (
+            <div style={{
+              padding: '20px',
+              textAlign: 'center',
+              background: 'rgba(0, 0, 0, 0.25)',
+              borderRadius: '12px',
+              border: '1px dashed var(--border-subtle)',
+              color: 'var(--text-dim)',
+              fontSize: '0.86rem'
+            }}>
+              <p style={{ margin: '0 0 12px 0' }}>No subjects were specified in your timetable. You can upload any textbook or study PDF below.</p>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="btn btn-primary"
+                style={{ padding: '8px 18px', fontSize: '0.84rem', gap: '6px' }}
+              >
+                <Upload size={14} /> Upload Custom PDF / Notes
+              </button>
+            </div>
+          ) : (
+            subjectsToday.map((rawSub, idx) => {
+              const sub = normalizeSubjectItem(rawSub) || { name: 'Subject', difficulty: 'medium', icon: '📚' };
+              const subName = sub.name || "Subject";
+              const subNameLower = subName.toLowerCase();
 
-            // Check if a curated preset matches this subject
-            const matchingPresetKey = findMatchingPresetKey(sub.name);
-            const presetInfo = matchingPresetKey ? PRESET_CATALOG[matchingPresetKey] : null;
+              // Check if material is already attached for this subject
+              const attachedMaterial = materialsList.find(m => {
+                if (!m) return false;
+                const mSubName = (m.subjectName || "").toLowerCase();
+                if (mSubName && mSubName === subNameLower) return true;
+                const matTitleLower = (m.title || "").toLowerCase();
+                if (subNameLower.includes('data') || subNameLower.includes('dsa')) return matTitleLower.includes('data') || matTitleLower.includes('dsa');
+                if (subNameLower.includes('operating') || subNameLower.includes('os')) return matTitleLower.includes('operating') || matTitleLower.includes('os');
+                if (subNameLower.includes('math') || subNameLower.includes('calculus')) return matTitleLower.includes('math') || matTitleLower.includes('calculus');
+                if (subNameLower.includes('network')) return matTitleLower.includes('network');
+                return (matTitleLower && subNameLower && (matTitleLower.includes(subNameLower) || subNameLower.includes(matTitleLower)));
+              });
+
+              // Check if a curated preset matches this subject
+              const matchingPresetKey = findMatchingPresetKey(subName);
+              const presetInfo = matchingPresetKey ? PRESET_CATALOG[matchingPresetKey] : null;
 
             return (
               <div
@@ -638,7 +678,7 @@ export default function DocumentIngestionPage({
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
 
       </div>
