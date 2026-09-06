@@ -219,8 +219,9 @@ export default function App() {
     const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
-      name: "Vikas Sharma",
-      student_name: "Vikas Sharma",
+      name: "Vikas Hiremath",
+      student_name: "Vikas Hiremath",
+
       grade_level: "engineering",
       wake_time: "06:30",
       sleep_time: "23:30",
@@ -243,8 +244,9 @@ export default function App() {
     const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
-      name: "Vikas Sharma",
-      student_name: "Vikas Sharma",
+      name: "Vikas Hiremath",
+      student_name: "Vikas Hiremath",
+
       grade_level: "engineering",
       wake_time: "06:30",
       sleep_time: "23:30",
@@ -279,8 +281,9 @@ export default function App() {
     const devUser = { email: "vikash@dev.io", isNewUser: false };
     const devProfile = {
       student_id: 1,
-      name: "Vikas Sharma",
-      student_name: "Vikas Sharma",
+      name: "Vikas Hiremath",
+      student_name: "Vikas Hiremath",
+
       grade_level: "engineering",
       wake_time: "06:30",
       sleep_time: "23:30",

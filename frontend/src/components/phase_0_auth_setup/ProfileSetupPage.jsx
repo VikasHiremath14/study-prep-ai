@@ -94,7 +94,8 @@ export default function ProfileSetupPage({ initialData, onBack, onProceedToReten
             <User size={16} color="var(--primary-light)" />
             <input
               type="text"
-              placeholder="e.g. Vikas Sharma"
+              placeholder="e.g. Vikas Hiremath"
+
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
               style={{

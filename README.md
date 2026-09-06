@@ -222,9 +222,10 @@ CREATE TABLE schedules (
 
 ---
 
-## 👥 Authors
+## 👥 Author
 
-- **Vikas Sharma / Vikas Hiremath** — *Lead Developer* ([GitHub Profile](https://github.com/VikasHiremath14))
+- **Vikas Hiremath** — *Lead Developer* ([GitHub Profile](https://github.com/VikasHiremath14))
+
 
 ---
 
