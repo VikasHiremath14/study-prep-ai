@@ -123,8 +123,8 @@ export default function StepDelayedRecall({ data, onChange, onNext, onPrev }) {
               Protocol Structure:
             </h4>
             <ul style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.6', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li><strong>1. Encoding Phase (18s):</strong> 8 academic concepts will be shown. Commit them to memory.</li>
-              <li><strong>2. Distractor Phase (12s):</strong> A brief mental task will clear your short-term acoustic buffer.</li>
+              <li><strong>1. Encoding Stage (18s):</strong> 8 academic concepts will be shown. Commit them to memory.</li>
+              <li><strong>2. Distractor Stage (12s):</strong> A brief mental task will clear your short-term acoustic buffer.</li>
               <li><strong>3. Free Recall:</strong> Type in as many words as you remember from the list.</li>
             </ul>
           </div>
@@ -135,17 +135,17 @@ export default function StepDelayedRecall({ data, onChange, onNext, onPrev }) {
             style={{ padding: '14px 32px', fontSize: '1rem', gap: '10px' }}
           >
             <Play size={18} />
-            Start Memory Encoding Phase
+            Start Memory Encoding Test
           </button>
         </div>
       )}
 
-      {/* 1. ENCODING PHASE */}
+      {/* 1. ENCODING STAGE */}
       {phase === 'encoding' && (
         <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--primary-light)', fontWeight: 700, textTransform: 'uppercase' }}>
-              Phase 1: Memorize Words
+              Step 1: Memorize Words
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem' }}>
               <Clock size={16} />
@@ -188,12 +188,12 @@ export default function StepDelayedRecall({ data, onChange, onNext, onPrev }) {
         </div>
       )}
 
-      {/* 2. DISTRACTOR DELAY PHASE */}
+      {/* 2. DISTRACTOR DELAY STAGE */}
       {phase === 'delay' && (
         <div className="glass-panel" style={{ padding: '40px 24px', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase' }}>
-              Phase 2: Working Memory Buffer Flush
+              Step 2: Working Memory Buffer Flush
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem' }}>
               <Clock size={16} />
@@ -227,11 +227,11 @@ export default function StepDelayedRecall({ data, onChange, onNext, onPrev }) {
         </div>
       )}
 
-      {/* 3. FREE RECALL PHASE */}
+      {/* 3. FREE RECALL STAGE */}
       {phase === 'recall' && (
         <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center' }}>
           <span style={{ fontSize: '0.8rem', color: '#34d399', fontWeight: 700, textTransform: 'uppercase' }}>
-            Phase 3: Free Recall Retrieval
+            Step 3: Free Recall Retrieval
           </span>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '4px', marginBottom: '8px' }}>
             Type all words you can recall:

@@ -86,7 +86,7 @@ export default function DocumentIngestionPage({
   const gradeLevel = activeProfile?.grade_level || "engineering";
   const retentionScore = activeProfile?.profile?.retention_score != null ? activeProfile.profile.retention_score : 0.78;
 
-  // Resolve today's subjects from Phase 2
+  // Resolve today's subjects from Timetable
   const [subjectsToday, setSubjectsToday] = useState(() => {
     if (initialSelectedSubjects && initialSelectedSubjects.length > 0) return initialSelectedSubjects;
     try {
@@ -458,7 +458,7 @@ export default function DocumentIngestionPage({
           style={{ padding: '6px 12px', fontSize: '0.78rem', gap: '6px' }}
         >
           <ArrowLeft size={14} />
-          Back to Phase 2: Timetable Formation
+          Back to Timetable
         </button>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
           Target Student: <strong style={{ color: '#ffffff' }}>{studentName}</strong> ({gradeLevel})
@@ -469,17 +469,17 @@ export default function DocumentIngestionPage({
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div className="badge badge-success" style={{ marginBottom: '12px' }}>
           <Sparkles size={14} />
-          Phase 3 &bull; Study Material Ingestion Linked to Timetable
+          Study Material Ingestion Linked to Timetable
         </div>
         <h2 style={{ fontSize: '2.1rem', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.02em' }}>
           Upload Materials for Today's Scheduled Subjects
         </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '740px', margin: '0 auto' }}>
-          Attach textbook chapters or upload custom PDF/Word documents for your <strong>{subjectsToday.length} subjects</strong> planned in Phase 2. Our vector agent parses page boundaries, builds 128-dim dense semantic embeddings, and paces your daily targets for your <strong>{Math.round(retentionScore * 100)}% retention profile</strong>.
+          Attach textbook chapters or upload custom PDF/Word documents for your <strong>{subjectsToday.length} subjects</strong> planned in your Timetable. Our vector agent parses page boundaries, builds dense semantic embeddings, and paces your daily targets for your <strong>{Math.round(retentionScore * 100)}% retention profile</strong>.
         </p>
       </div>
 
-      {/* SECTION 1: TODAY'S SCHEDULED SUBJECTS (EXACT SUBJECTS TYPED/SELECTED IN PHASE 2) */}
+      {/* SECTION 1: TODAY'S SCHEDULED SUBJECTS (EXACT SUBJECTS TYPED/SELECTED IN TIMETABLE) */}
       <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -498,7 +498,7 @@ export default function DocumentIngestionPage({
           </span>
         </div>
 
-        {/* Dynamic Subject Cards matching whatever user entered in Phase 2 */}
+        {/* Dynamic Subject Cards matching whatever user entered in Timetable */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {subjectsToday.map((sub, idx) => {
             // Check if material is already attached for this subject
@@ -971,7 +971,7 @@ export default function DocumentIngestionPage({
             </div>
           </div>
 
-          {/* Proceed to Phase 4 CTA */}
+          {/* Proceed to Active Reader CTA */}
           <div className="glass-panel" style={{
             padding: '20px 24px',
             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(16, 185, 129, 0.15))',
@@ -988,7 +988,7 @@ export default function DocumentIngestionPage({
                 Ready to study {aggregatedCurriculum.total_pages} extracted pages with AI Line-Level QA?
               </h4>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', margin: 0 }}>
-                Proceed to <strong>Active Reader &amp; Grounded QA (Phase 4)</strong> with live local clock sync, timetable-scheduled document auto-selection, and exact real-time slot countdown timer.
+                Proceed to <strong>Active Reader &amp; Grounded QA</strong> with live local clock sync, timetable-scheduled document auto-selection, and exact real-time slot countdown timer.
               </p>
             </div>
 

@@ -542,7 +542,7 @@ export default function StudentRecordsModal({
                 <div style={{ textAlign: 'center', padding: '36px 0' }}>
                   <Calendar size={36} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    No active timetable generated yet. Visit Phase 2 to calibrate your circadian schedule.
+                    No active timetable generated yet. Visit Circadian Timetable to calibrate your daily study schedule.
                   </p>
                 </div>
               )}
@@ -625,7 +625,7 @@ export default function StudentRecordsModal({
                 <div style={{ textAlign: 'center', padding: '36px 0' }}>
                   <BookOpen size={36} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    No notes or bookmarks recorded yet. Highlight text in Phase 4 Reader to create margin notes.
+                    No notes or bookmarks recorded yet. Highlight text in Active Reader to create margin notes.
                   </p>
                 </div>
               )}
@@ -700,7 +700,7 @@ export default function StudentRecordsModal({
                 <div style={{ textAlign: 'center', padding: '36px 0' }}>
                   <Target size={36} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    No daily targets recorded yet. Upload syllabus material in Phase 3 to generate daily milestones.
+                    No daily targets recorded yet. Upload syllabus material in Study Materials to generate daily milestones.
                   </p>
                 </div>
               )}
@@ -775,7 +775,7 @@ export default function StudentRecordsModal({
                 <div style={{ textAlign: 'center', padding: '36px 0' }}>
                   <Award size={36} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    No quiz submissions recorded yet. Complete reading targets in Phase 4 to take active recall quizzes.
+                    No quiz submissions recorded yet. Complete reading targets in Active Reader to take active recall quizzes.
                   </p>
                 </div>
               )}

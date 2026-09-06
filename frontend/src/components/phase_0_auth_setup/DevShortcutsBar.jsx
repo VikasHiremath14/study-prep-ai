@@ -67,10 +67,10 @@ export default function DevShortcutsBar({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="Skip to Phase 2 Timetable"
+              title="Fast-forward to Circadian Timetable"
             >
               <Zap size={11} />
-              Phase 2 (Timetable)
+              Timetable
             </button>
 
             <button
@@ -88,10 +88,10 @@ export default function DevShortcutsBar({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="Skip to Phase 3 Ingestion"
+              title="Fast-forward to Course Material Ingestion"
             >
               <Zap size={11} />
-              Phase 3 (Ingestion)
+              Materials
             </button>
 
             {onSkipToPhase4 && (
@@ -110,10 +110,10 @@ export default function DevShortcutsBar({
                   alignItems: 'center',
                   gap: '4px'
                 }}
-                title="Skip to Phase 4 Active Document Reader"
+                title="Fast-forward to Active Document Reader"
               >
                 <Zap size={11} />
-                Phase 4 (Reader)
+                Active Reader
               </button>
             )}
 
@@ -132,11 +132,12 @@ export default function DevShortcutsBar({
                 alignItems: 'center',
                 gap: '4px'
               }}
-              title="Reset session and return to Auth Page"
+              title="Reset session and return to Login"
             >
               <RotateCcw size={11} />
               Reset
             </button>
+
           </div>
         )}
       </div>

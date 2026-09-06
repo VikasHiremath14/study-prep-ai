@@ -131,9 +131,9 @@ export default function App() {
     );
 
     if (hasExistingRecords && !authData.isNewUser) {
-      // Old user with existing records: skip Tell us about yourself & jump directly to Phase 2 Timetable!
+      // Old user with existing records: skip Tell us about yourself & jump directly to Timetable!
       triggerBreakingBadTransition(
-        `Welcome Back, ${mergedProfile.name}! Loading Phase 2 Circadian Timetable...`,
+        `Welcome Back, ${mergedProfile.name}! Loading Circadian Timetable...`,
         "scheduler"
       );
     } else {
@@ -186,7 +186,7 @@ export default function App() {
   };
 
 
-  // Timetable Completed -> Transition to Phase 3 Document Ingestion
+  // Timetable Completed -> Transition to Course Material Ingestion
   const handleProceedToIngestion = (scheduleResult) => {
     if (scheduleResult) {
       if (scheduleResult.schedule) setTimetableData(scheduleResult.schedule);
@@ -198,7 +198,7 @@ export default function App() {
     );
   };
 
-  // Ingestion Completed -> Ready for Phase 4 Reader
+  // Ingestion Completed -> Ready for Active Reader
   const handleProceedToReader = (docBundle) => {
     if (docBundle?.activeDocument) {
       setActiveDocument(docBundle.activeDocument);
@@ -235,7 +235,7 @@ export default function App() {
     setCurrentUser(devUser);
     setStudentProfile(devProfile);
     triggerBreakingBadTransition(
-      "Developer Fast-Forward: Calibrating Phase 2 Circadian Timetable...",
+      "Developer Fast-Forward: Calibrating Circadian Timetable...",
       "scheduler"
     );
   };
@@ -272,7 +272,7 @@ export default function App() {
     setTimetableData(devSchedule);
     setSelectedSubjects(["Data Structures & Algorithms", "Operating Systems", "Computer Networks"]);
     triggerBreakingBadTransition(
-      "Developer Fast-Forward: Launching Phase 3 Content Ingestion...",
+      "Developer Fast-Forward: Launching Course Material Ingestion...",
       "ingestion"
     );
   };
@@ -334,7 +334,7 @@ export default function App() {
     setActiveDocument(devDocDSA);
     setAllDocuments([devDocDSA, devDocOS]);
     triggerBreakingBadTransition(
-      "Developer Fast-Forward: Launching Phase 4 Active Reader...",
+      "Developer Fast-Forward: Launching Active Reader...",
       "reader"
     );
   };
@@ -505,7 +505,7 @@ export default function App() {
                   borderRadius: '999px',
                   fontWeight: 600
                 }}>
-                  Phase 1 &bull; 2 &bull; 3 &bull; 4 &bull; 5 &bull; 6 Active
+                  AI Study Companion Active
                 </span>
               </div>
             </div>
@@ -528,13 +528,14 @@ export default function App() {
                   fontWeight: 600
                 }}>
                   {currentView === 'profile_setup' && "Step 1 of 5: Profile Setup"}
-                  {currentView === 'retention_wizard' && "Step 2 of 5: Retention Profiling (Phase 1)"}
-                  {currentView === 'scheduler' && "Step 3 of 5: Circadian Timetable (Phase 2)"}
-                  {currentView === 'ingestion' && "Step 4 of 5: Content Ingestion (Phase 3)"}
-                  {currentView === 'reader' && "Step 5 of 5: Active Reader & Active Recall (Phase 4, 5 & 6)"}
+                  {currentView === 'retention_wizard' && "Step 2 of 5: Attention & Retention Assessment"}
+                  {currentView === 'scheduler' && "Step 3 of 5: Circadian Study Timetable"}
+                  {currentView === 'ingestion' && "Step 4 of 5: Course Material Ingestion"}
+                  {currentView === 'reader' && "Step 5 of 5: Active Reader & Conceptual Mastery"}
                 </span>
               </div>
             )}
+
 
             {/* User Account Button (Opens Records Dashboard Modal) & Logout */}
             {currentUser && (
@@ -679,10 +680,10 @@ export default function App() {
                 Go to Sign In
               </button>
               <button onClick={handleDevSkipToPhase2} className="btn btn-secondary" style={{ fontSize: '0.84rem' }}>
-                Open Timetable (Phase 2)
+                Open Circadian Timetable
               </button>
               <button onClick={handleDevSkipToPhase4} className="btn btn-secondary" style={{ fontSize: '0.84rem' }}>
-                Open Reader (Phase 4)
+                Open Active Reader
               </button>
             </div>
           </div>
@@ -699,7 +700,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 2: Neurocognitive Retention Assessment (Phase 1) */}
+        {/* Step 2: Neurocognitive Retention Assessment */}
         {currentView === 'retention_wizard' && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px' }}>
             {(studentProfile?.profile?.retention_score || studentProfile?.retention_score) && !forceRetakeExam ? (
@@ -730,7 +731,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 3: Circadian Timetable & Delusion Scanner (Phase 2) */}
+        {/* Step 3: Circadian Timetable & Delusion Scanner */}
         {currentView === 'scheduler' && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px' }}>
             <div style={{ marginBottom: '14px' }}>
@@ -766,7 +767,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 4: Academic Ingestion & Daily Targets (Phase 3) */}
+        {/* Step 4: Academic Ingestion & Daily Targets */}
         {currentView === 'ingestion' && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 20px' }}>
             <DocumentIngestionPage
@@ -779,7 +780,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Step 5: Distraction-Free Active Document Reader & Line-Level Tutor (Phase 4, 5 & 6) */}
+        {/* Step 5: Distraction-Free Active Document Reader & Line-Level Tutor */}
         {currentView === 'reader' && (
           <DocumentReaderPage
             documentData={activeDocument}
@@ -803,9 +804,10 @@ export default function App() {
           color: 'var(--text-dim)',
           fontSize: '0.82rem'
         }}>
-          StudyPrep.AI &bull; Autonomous Multi-Agent Academic Preparation System &bull; Phase 1 through 6 Active
+          StudyPrep.AI &bull; Autonomous Multi-Agent Academic Preparation System &bull; All Modules Active
         </footer>
       )}
+
 
     </div>
   );

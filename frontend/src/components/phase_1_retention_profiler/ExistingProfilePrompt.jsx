@@ -163,7 +163,7 @@ export default function ExistingProfilePrompt({
             }}
           >
             <Zap size={18} />
-            Skip to Study Timetable (Phase 2)
+            Skip to Circadian Timetable
             <ArrowRight size={16} />
           </button>
 

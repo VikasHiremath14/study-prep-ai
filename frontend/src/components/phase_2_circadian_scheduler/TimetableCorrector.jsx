@@ -480,13 +480,13 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <div className="badge badge-primary" style={{ marginBottom: '12px' }}>
           <Sparkles size={14} />
-          Phase 2 &bull; Timetable Formation &amp; Circadian Calibration
+          Circadian Study Timetable &amp; Chronobiology Calibration
         </div>
         <h2 style={{ fontSize: '2.1rem', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.02em' }}>
           Form Today's Circadian Study Timetable
         </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '720px', margin: '0 auto' }}>
-          Calibrated using your <strong>Phase 1 Retention Score ({Math.round(retentionScore * 100)}% &bull; {focusTier})</strong>. Specify what you are studying today and your daily commitments to construct your non-uniform bio-rhythmic schedule.
+          Calibrated using your <strong>Retention Score ({Math.round(retentionScore * 100)}% &bull; {focusTier})</strong>. Specify what you are studying today and your daily commitments to construct your non-uniform bio-rhythmic schedule.
         </p>
       </div>
 
@@ -658,7 +658,7 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
                       }}
                     >
                       <CheckCircle2 size={16} />
-                      Keep Existing Timetable &amp; Proceed to Materials (Phase 3)
+                      Keep Existing Timetable &amp; Proceed to Study Materials
                     </button>
 
                     <button
@@ -698,7 +698,7 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
             </div>
           )}
 
-          {/* Phase 1 Retention Profile Insights Bar */}
+          {/* Retention Profile Insights Bar */}
           <div className="glass-panel" style={{
             padding: '14px 20px',
             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1))',
@@ -713,7 +713,7 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
               <Brain size={20} color="#34d399" />
               <div>
                 <strong style={{ fontSize: '0.9rem', color: '#ffffff', display: 'block' }}>
-                  Phase 1 Retention Profiler Result Active
+                  Retention Profile Active
                 </strong>
                 <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
                   {Math.round(retentionScore * 100)}% Retention Score &bull; {focusTier} &bull; {breakInterval}m Optimal Session Interval
@@ -1370,7 +1370,7 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
                 </div>
               </div>
 
-              {/* NEXT STEP CTA: PROCEED TO PHASE 3 MATERIAL INGESTION */}
+              {/* NEXT STEP CTA: PROCEED TO MATERIAL INGESTION */}
               {onNavigateToReader && (
                 <div className="glass-panel" style={{
                   padding: '20px 24px',
@@ -1388,7 +1388,7 @@ export default function TimetableCorrector({ activeProfile, existingSchedule, on
                       Ready to upload materials for your {subjects.length} study subjects?
                     </h4>
                     <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', margin: 0 }}>
-                      Proceed to <strong>Study Material Ingestion (Phase 3)</strong> to add textbooks and notes matching today's timetable.
+                      Proceed to <strong>Study Material Ingestion</strong> to add textbooks and notes matching today's timetable.
                     </p>
                   </div>
                   <button

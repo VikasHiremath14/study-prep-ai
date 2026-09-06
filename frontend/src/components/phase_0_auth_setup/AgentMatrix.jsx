@@ -18,68 +18,68 @@ import {
 
 const AGENTS = [
   {
-    phase: 'Phase 1',
+    module: 'Module 01',
     name: 'Retention Profiler',
     icon: BrainCircuit,
     color: '#6366f1',
     description: 'Measures sustained focus, reel-watch endurance, and distraction recovery to calculate calibrated study/break intervals.',
-    status: 'Ready for Phase 1'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 2',
+    module: 'Module 02',
     name: 'Timetable Correction Agent',
     icon: CalendarClock,
     color: '#06b6d4',
     description: 'Deterministic rule engine adjusting schedules for wake buffers, break intervals, and grade-level study caps.',
-    status: 'Ready for Phase 2'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 3',
+    module: 'Module 03',
     name: 'Content Ingestion & RAG',
     icon: FileStack,
     color: '#10b981',
     description: 'PDF text extraction, chunking, pgvector embedding storage, and retention-scaled daily page targets.',
-    status: 'Ready for Phase 3'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 4 - 5',
+    module: 'Module 04',
     name: 'Reader UI & Grounded QA',
     icon: BookOpenCheck,
     color: '#3b82f6',
     description: 'Distraction-free reading interface with line-level popover explanations calibrated to student grade level.',
-    status: 'Ready for Phase 4-5'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 7',
+    module: 'Module 05',
     name: 'Anti-Web Search Quiz Generator',
     icon: Lightbulb,
     color: '#f59e0b',
     description: 'Generates non-searchable active recall questions weighting pages with notes and high doubt frequencies.',
-    status: 'Ready for Phase 7'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 8',
+    module: 'Module 06',
     name: 'Weak-Topic Recommender',
     icon: TrendingDown,
     color: '#ec4899',
     description: 'Aggregates quiz mistakes, doubts, and note density into prioritized weak-topic reviews.',
-    status: 'Ready for Phase 8'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 9 - 10',
+    module: 'Module 07',
     name: 'Character Companion',
     icon: Bot,
     color: '#8b5cf6',
     description: 'Persona-driven original nudges, break activity suggestions, visual themes, and missed-session recovery.',
-    status: 'Ready for Phase 9-10'
+    status: 'Active & Calibrated'
   },
   {
-    phase: 'Phase 11 - 12',
+    module: 'Module 08',
     name: 'Orchestrator & Analytics',
     icon: Compass,
     color: '#14b8a6',
     description: 'Synthesizes all agents into unified daily session priorities and dashboard analytics.',
-    status: 'Ready for Phase 11-12'
+    status: 'Active & Calibrated'
   }
 ];
 
@@ -97,7 +97,7 @@ export default function AgentMatrix() {
         </div>
         <div className="badge badge-success">
           <ShieldCheck size={14} />
-          Phase 0 Core Skeleton Active
+          Autonomous Multi-Agent Matrix Active
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export default function AgentMatrix() {
                   <IconComponent size={20} />
                 </div>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-dim)', letterSpacing: '0.04em' }}>
-                  {agent.phase}
+                  {agent.module}
                 </span>
               </div>
 

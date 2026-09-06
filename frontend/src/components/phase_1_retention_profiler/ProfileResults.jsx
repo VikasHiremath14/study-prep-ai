@@ -394,7 +394,7 @@ export default function ProfileResults({ profileData, onRetake, onProceedToSched
           </div>
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', marginBottom: '2px' }}>
-              Phase 2: Circadian Timetable &amp; .ICS Calendar Ready
+              Circadian Timetable &amp; .ICS Calendar Ready
             </h4>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', margin: 0 }}>
               Your {scorePercent}% score will now shape your non-uniform focus intervals, meal breaks, and college schedule.
@@ -442,7 +442,7 @@ export default function ProfileResults({ profileData, onRetake, onProceedToSched
           }}
         >
           <Sparkles size={16} />
-          Save Retention Record &amp; Proceed to Phase 2 Timetable
+          Save Retention Record &amp; Proceed to Timetable
           <ArrowRight size={16} />
         </button>
       </div>

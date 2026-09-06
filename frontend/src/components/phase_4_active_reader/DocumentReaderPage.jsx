@@ -397,7 +397,7 @@ export default function DocumentReaderPage({
             style={{ padding: '6px 12px', fontSize: '0.78rem', gap: '6px' }}
           >
             <ArrowLeft size={14} />
-            Phase 3: Materials
+            Course Materials
           </button>
           <div>
             <h4 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: theme.text }}>

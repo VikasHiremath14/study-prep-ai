@@ -348,7 +348,7 @@ export default function AntiWebSearchQuizModal({
                   border: '1px solid rgba(245, 158, 11, 0.4)',
                   fontWeight: 700
                 }}>
-                  Phase 5 &amp; 6
+                  Active Recall Engine
                 </span>
               </div>
               <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
