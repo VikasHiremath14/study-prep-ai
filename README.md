@@ -1,118 +1,132 @@
-# 🧠 StudyPrep.AI — Autonomous Multi-Agent Academic Preparation System
+# 🧠 StudyPrep.AI — Autonomous Multi-Agent Cognitive Study Operating System
+### *Enterprise-Grade Agentic AI &bull; Neurocognitive Attention Profiling &bull; Bio-Circadian Pacing &bull; Semantic Vector RAG &bull; Adversarial Active Recall*
 
 <div align="center">
 
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![React](https://img.shields.io/badge/React_18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Pytest](https://img.shields.io/badge/Pytest-27_Passing-success?style=for-the-badge&logo=pytest&logoColor=white)
+![Agentic AI](https://img.shields.io/badge/Architecture-Autonomous_Multi--Agent_System-10b981?style=for-the-badge&logo=openai&logoColor=white)
+![LLM & RAG](https://img.shields.io/badge/AI%2FML-Semantic_Vector_RAG-8b5cf6?style=for-the-badge&logo=google&logoColor=white)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI_Async_Engine-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/Frontend-React_18_Glassmorphism-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Supabase](https://img.shields.io/badge/Database-Supabase_%26_Vector_DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Pytest](https://img.shields.io/badge/Test_Suite-27_Passing_(100%25)-success?style=for-the-badge&logo=pytest&logoColor=white)
 
-**An intelligent, neurocognitively grounded multi-agent study operating system that measures student attention endurance, calibrates circadian timetables, ingests academic material, provides line-level contextual tutoring, and tests deep conceptual mastery with anti-web search active recall.**
+---
 
-[Architecture](#-multi-agent-system-architecture) • [Neurocognitive Foundations](#-neurocognitive-scientific-foundations) • [Six Core Phases](#-the-six-integrated-phases) • [Quickstart](#-quickstart-guide) • [Database Schema](#-database-schema)
+### 🌐 Official GitHub Project Description
+> **StudyPrep.AI** is an advanced **Agentic AI study operating system** that synthesizes **neurocognitive behavioral profiling**, **bio-circadian chronotype pacing**, **semantic vector RAG document ingestion**, and **adversarial anti-web search active recall**. Powered by a deterministic multi-agent orchestration architecture, it measures empirical student focus endurance, corrects cognitive burnout schedules, provides line-level multi-persona tutoring, and verifies true conceptual mastery.
+
+[Executive Overview](#-executive-overview) • [Agentic AI Architecture](#-agentic-ai-multi-agent-system-architecture) • [AI/ML & Cognitive Foundations](#-neurocognitive-scientific--aiml-foundations) • [Six Core Phases](#-the-six-integrated-phases) • [Quickstart Guide](#-quickstart-guide) • [Database Architecture](#-database-schema)
 
 </div>
 
 ---
 
-## 🌟 Key Highlights & Innovations
+## 🏛️ Executive Overview
 
-1. **Empirical Retention Profiling**: Replaces guesswork with calibrated neurocognitive batteries (SART, Digit Span Working Memory, Delayed Recall, Dopamine Tolerance).
-2. **Circadian Timetable Correction**: Enforces circadian biology, ultradian rhythms, nutrition buffers, and eliminates delusional cramming.
-3. **Active Timetable State Management**: Returning users are instantly recognized, presented with their active schedule, and can choose to proceed directly to Phase 3, track active focus sessions, or recalibrate a new timetable.
-4. **Distraction-Free Active Reader**: Line-level contextual tutor with 4 interchangeable personas (Socratic, First Principles, ELI5, Exam-Cram) directly over PDF text.
-5. **Anti-Web Search Quiz Engine**: Generates hallucination-resistant, passage-specific questions that cannot be solved by generic Google searches.
-6. **Unified Student Records Modal**: Full consolidated real-time dashboard displaying retention scores, active timetables, margin notes, bookmarks, daily target completions, and quiz histories.
-7. **Cinematic Breaking Bad Themed UI**: Dark-first glassmorphism design with atmospheric animations, chemical smoke particles, and laboratory aesthetic.
+Traditional academic preparation relies on static timetables and brute-force memorization that neglect human neurobiology, working memory constraints, and media-induced attention fragmentation. 
+
+**StudyPrep.AI** introduces an end-to-end **Autonomous Cognitive Engineering Platform** that treats learning as a calibrated neuro-computational feedback loop:
+1. **Agentic Neurocognitive Diagnostics (Phase 1)**: Measures empirical sustained attention endurance, working memory span, and dopamine decay curves to compute a mathematical composite retention score.
+2. **Bio-Circadian Chronobiology Engine (Phase 2)**: Translates retention metrics into non-uniform study schedules, enforcing prefrontal cortisol peak alignment, ultradian focus blocks, and postprandial downtime buffers.
+3. **Semantic Vector Ingestion & Chunking (Phase 3)**: Dynamically indexes complex syllabi, textbooks, and lecture notes into vector embeddings with retention-calibrated daily page milestones.
+4. **Multi-Persona Pedagogical Intelligence (Phase 4)**: Embedded distraction-free active reader with real-time synchronized telemetry and in-line contextual tutors (Socratic, First Principles, ELI5, Exam-Cram).
+5. **Adversarial Anti-Web Search Active Recall (Phases 5 & 6)**: Generates passage-specific, hallucination-resistant evaluation matrices that cannot be solved via search engines, driving deep Feynman conceptual mastery.
+6. **Unified State & Identity Telemetry (Phase 0)**: Supabase-vectorized identity with dual-channel OTP verification and a 5-tab real-time telemetry dashboard.
+
 
 ---
 
-## 🤖 Multi-Agent System Architecture
+## 🤖 Agentic AI Multi-Agent System Architecture
 
 ```mermaid
 graph TD
-    A[Student / User] -->|Auth & Credentials| B[Phase 0: Auth & OTP Service]
-    B -->|New User| C[Phase 1: Retention Profiler Agent]
-    B -->|Returning User with Records| D[Phase 2: Timetable Correction Agent]
-    C -->|Retention Score & Focus Interval| D
-    D -->|Circadian Slots & Subject Map| E[Phase 3: Academic Ingestion Agent]
-    E -->|Vector Chunks & Target Plan| F[Phase 4: Active Reader & Line Tutor]
-    F -->|Notes, Doubts & Text Context| G[Phase 5 & 6: Anti-Web Search Quiz Engine]
-    G -->|Mastery Scores & Weak Topics| H[(Consolidated Student Records Dashboard)]
+    A[Student / User] -->|Enterprise Auth & Telemetry| B[Phase 0: Vectorized Identity & Telemetry Bus]
+    B -->|New Student Profile| C[Phase 1: Neurocognitive Profiling Agent]
+    B -->|Returning Student with State| D[Phase 2: Bio-Circadian Scheduler Agent]
+    C -->|Retention Score & Ultradian Window| D
+    D -->|Circadian Slots & Subject Map| E[Phase 3: Semantic Vector Ingestion Agent]
+    E -->|Vector Embeddings & Page Targets| F[Phase 4: Active Reader & Socratic Line Tutor]
+    F -->|Margin Notes, Doubts & Context| G[Phase 5 & 6: Adversarial Anti-Web Search Quiz Engine]
+    G -->|Feynman Mastery Metrics & Remediation| H[(Unified Telemetry & Student Records Dashboard)]
 ```
 
 | Phase & Agent | Responsibility | Core Mechanism & Research Foundation |
 | :--- | :--- | :--- |
-| **Phase 0: Auth & Records** | Authentication, OTP Dispatch, Record Sync | Supabase Auth + Local SHA-256 fallback, 6-digit Email/SMS OTP, Google One-Click Auth, Consolidated Student Records |
-| **Phase 1: Retention Profiler** | Measures attention endurance & break intervals | Multi-signal behavioral scoring: SART Vigilance, Digit Span Memory, Delayed Recall, Reels Tolerance, Metacognitive Optimism Calibration |
-| **Phase 2: Timetable Corrector** | Calibrates realistic, non-delusional schedules | Circadian rhythm constraints, post-wake cortisol buffers, non-uniform study blocks, nutrition downtime, live countdown focus timers, .ics export |
-| **Phase 3: Content Ingestion** | Ingests textbooks and plans daily targets | Academic document parsing, semantic vector chunking, retention-adjusted daily page targeting |
-| **Phase 4: In-App Reader & QA** | Distraction-free reading & line-level tutor | Page-scoped similarity search, in-line text margin notes & bookmarks, 4 pedagogical personas (Socratic, First Principles, ELI5, Exam Cram) |
-| **Phase 5 & 6: Anti-Web Search Quiz** | Active recall & Feynman mastery verification | Passage-specific question synthesis weighting student annotated sections, instant misconception remediation, historical attempt tracking |
+| **Phase 0: Vectorized Identity Fabric** | Authentication, OTP Dispatch, Real-Time Telemetry Sync | Supabase Auth + Local SHA-256 fallback, 6-digit Multi-Channel OTP, Google One-Click OAuth, 5-Tab Consolidated Records Bus |
+| **Phase 1: Neurocognitive Profiling Agent** | Measures empirical attention endurance & focus curves | Multi-signal neuropsychological battery: SART Vigilance, Digit Span Buffer, Delayed Recall Decay, Video Dopamine Tolerance, Metacognitive Calibration |
+| **Phase 2: Bio-Circadian Pacing Agent** | Synthesizes realistic, non-uniform study pacing | Circadian biology rules engine, Post-Wake Cortisol Buffers, Ultradian rhythm pacer, Postprandial dip downtime, Live Audio Focus Tracker, RFC 5545 .ics export |
+| **Phase 3: Semantic Ingestion Agent** | High-dimensional document vectorization & chunking | Document text chunking, vector embedding generation, and retention-calibrated daily page milestone planning |
+| **Phase 4: Contextual Line Tutor Agent** | Distraction-free active reading & line-level tutoring | Page-scoped similarity retrieval, in-line text margin notes & bookmarks, 4 pedagogical persona pipelines (Socratic, First Principles, ELI5, Exam Cram) |
+| **Phase 5 & 6: Adversarial Recall Agent** | Active recall & Feynman mastery synthesis | Passage-specific question synthesis weighting student annotated sections, instant misconception remediation, historical mastery scoring |
 
 ---
 
-## 🧪 Neurocognitive Scientific Foundations
+## 🧪 Neurocognitive Scientific & AI/ML Foundations
 
-The system's core algorithms are grounded in empirical cognitive science and neuropsychology literature:
+The system's core algorithmic scoring engines are grounded in peer-reviewed cognitive science, computational neuroscience, and AI/ML literature:
 
-1. **Sustained Attention to Response Task (SART)** (*Robertson et al., 1997*):
-   - Measures executive inhibitory control (commission errors on No-Go trials) and sustained prefrontal vigilance.
-2. **Working Memory Digit Span Buffer** (*Baddeley 1986; Miller 1956*):
-   - Quantifies active working memory capacity ($7 \pm 2$ items) essential for multi-step analytical problem-solving.
-3. **Delayed Free Recall & Ebbinghaus Decay** (*Roediger & Karpicke, 2006; Ebbinghaus 1885*):
-   - Evaluates long-term memory retrieval without cues following working memory buffer flush.
-4. **Short-Form Video Dopamine Resilience** (*Gazzaley & Rosen, 2016 MIT Press*):
-   - Models media multitasking vulnerability and bottom-up attentional capture under low-friction micro-rewards.
-5. **Metacognitive Calibration & Optimism Bias Discount** (*Kruger & Dunning, 1999*):
-   - Computes the delta between self-reported stamina vs empirical cognitive battery to prevent overambitious scheduling.
+1. **Executive Inhibitory Control & SART Vigilance** (*Robertson et al., 1997*):
+   - Theoretical Framework: Prefrontal executive control and sustained vigilance.
+   - Algorithmic Metric: Penalizes commission errors on No-Go target `3` and omission lapses to model real-time distractibility.
+2. **Working Memory Capacity & Central Executive Buffer** (*Baddeley 1986; Miller 1956*):
+   - Theoretical Framework: Multi-component working memory buffer model ($7 \pm 2$).
+   - Algorithmic Metric: Dynamically scales forward digit sequences to establish maximum analytical throughput capacity.
+3. **Hippocampal Memory Decay Curves & Testing Effect** (*Roediger & Karpicke, 2006; Ebbinghaus 1885*):
+   - Theoretical Framework: Unprompted retrieval practice after working memory flush.
+   - Algorithmic Metric: Quantifies free recall retention without contextual cues to measure synaptic consolidation.
+4. **Bottom-Up Dopamine Foraging & Media Multitasking** (*Gazzaley & Rosen, 2016 MIT Press*):
+   - Theoretical Framework: Prefrontal vulnerability to low-friction micro-rewards.
+   - Algorithmic Metric: Measures video skip latency and completion thresholds to calibrate ultradian break frequency.
+5. **Metacognitive Calibration & Dunning-Kruger Discount** (*Kruger & Dunning, 1999*):
+   - Theoretical Framework: Discrepancy between perceived vs empirical cognitive endurance.
+   - Algorithmic Metric: Calculates the Metacognitive Optimism Gap to discount overconfident self-reported study habits.
 
 ---
 
 ## 🚀 The Six Integrated Phases
 
-### 🔐 Phase 0: Authentication & Student Records
-- **Multi-Channel Registration**: Name, Phone, Email, Password verification with confirm password validation.
-- **OTP Verification**: 6-digit OTP delivery simulation with 1-click `[⚡ Auto-Fill & Enter]` in development mode.
-- **Google One-Click Authentication**: Instant provisioning with linked student profiles.
-- **Consolidated Student Records Dashboard**: Interactive 5-tab modal (Retention Report, Active Timetable, Notes & Bookmarks, Daily Targets, Quiz History) with a non-destructive `"Clear All Study Records"` feature that retains user login credentials.
+### 🔐 Phase 0: Vectorized Identity Fabric & Consolidated Telemetry
+- **Multi-Channel Authentication**: Email, Mobile, Password with confirmation validation.
+- **Resilient OTP Dispatch**: 6-digit OTP delivery simulation with 1-click `[⚡ Auto-Fill & Enter]` in developer mode.
+- **Google One-Click OAuth**: Seamless Google account synchronization with linked student profiles.
+- **Consolidated Student Records Telemetry**: Interactive 5-tab dashboard modal (*Retention Report, Active Timetable, Notes & Bookmarks, Daily Targets, Quiz Analytics*) with a non-destructive `"Clear All Study Records"` feature that preserves user account credentials.
 
-### 🎯 Phase 1: Retention & Attention Profiling
-- 5-step interactive neurocognitive battery:
-  1. **SART Vigilance Test**: High-speed numerical stream with No-Go trigger on `3`.
-  2. **Digit Span Memory**: Forward recall sequence challenge with dynamic span scaling.
-  3. **Delayed Free Recall**: Unprompted retrieval test after distractor flush.
-  4. **Short-Form Dopamine Test**: Real-time evaluation of video watch completion and skip reflexes.
-  5. **Baseline Habit Survey**: Self-reported study durations and historical series completion rates.
-- **Output**: Calibrated composite Retention Score, Focus Tier (e.g., *Deep Focus Master*, *Standard Collegiate Rhythm*), and optimal break interval (e.g., *45m focus / 10m reset*).
+### 🎯 Phase 1: Neurocognitive Retention Profiler Engine
+- 5-step empirical neurocognitive diagnostic battery:
+  1. **SART Vigilance Matrix**: High-frequency numerical stream measuring inhibitory slips.
+  2. **Digit Span Memory Capacity**: Dynamic forward-span sequence scaling.
+  3. **Delayed Free Recall**: Unprompted retrieval test post-distractor buffer flush.
+  4. **Short-Form Dopamine Test**: Real-time evaluation of short-form video watch completion and skip reflexes.
+  5. **Baseline Habit Survey**: Self-reported session lengths and multi-stage series perseverance.
+- **Output**: Composite Retention Score (0.00–1.00), Focus Tier (*Deep Focus Master*, *Standard Collegiate*, *Sprint Pacer*, *Micro-Focus Recovery*), and optimal study/break duration formula.
 
-### ⏰ Phase 2: Circadian Scheduler & Timetable Correction
-- **Active Schedule Detection**: Detects previously calibrated timetables and provides 3 instant choices:
+### ⏰ Phase 2: Bio-Circadian Chronobiology & Timetable Corrector
+- **Active Schedule Detection & 3-Choice Prompt**: Automatically detects existing schedules and presents:
   - 🟢 **Keep Existing Timetable & Proceed to Materials (Phase 3)**
   - 🔵 **View & Track Current Timetable**
   - 🟡 **Recalibrate / Create New Timetable**
-- **Circadian Pacing**: Dynamically allocates non-uniform study blocks matching student chronotype, morning peak alertness windows, and meal downtime buffers.
-- **Live Focus Tracker**: Interactive countdown timer with Web Audio API chime notifications upon completion.
-- **Delusion Scanner**: Audits unrealistic student schedules and demonstrates corrected versions.
-- **Calendar Export**: Generates standard RFC 5545 `.ics` files for Google Calendar and Apple Calendar.
+- **Circadian Rhythmic Pacing**: Allocates non-uniform study blocks matching student chronotype, morning prefrontal alertness windows, and meal downtime buffers.
+- **Live Focus Tracker**: Interactive countdown timer with Web Audio API psychoacoustic chime notifications.
+- **Delusion Scanner**: Audits overambitious cramming schedules and generates scientifically balanced corrections.
+- **Calendar Export**: Standard RFC 5545 `.ics` export for Google Calendar, Apple Calendar, and Outlook.
 
-### 📚 Phase 3: Academic Content Ingestion
+### 📚 Phase 3: Semantic Vector Document Ingestion
 - Ingests PDFs, lecture slides, and course syllabi.
 - Semantic vector chunking with target daily page breakdown calibrated to student retention scores.
 
-### 📖 Phase 4: Distraction-Free Active Reader & Line-Level Tutor
+### 📖 Phase 4: Distraction-Free Active Reader & Line-Level Socratic Tutor
 - Clean, focused document viewer with real-time synchronized laptop clock.
-- **Line-Level Tutor Popover**: Highlight any text to trigger instant explanations across 4 personas:
+- **Line-Level Multi-Persona Tutor**: Highlight any text passage to trigger instant explanations across 4 pedagogical modes:
   - **Socratic Guide**: Asks probing questions to guide discovery.
   - **First Principles**: Derives concepts from fundamental axioms.
   - **ELI5**: Breaks down complex topics using intuitive analogies.
   - **Exam Cram**: Focuses strictly on high-yield exam takeaways.
 - **Margin Notes & Bookmarks**: Save custom notes and bookmarks synced directly to DB and local storage.
 
-### 🏆 Phase 5 & 6: Anti-Web Search Quiz & Feynman Mastery
-- Generates passage-specific quizzes that cannot be answered via web search engines.
+### 🏆 Phase 5 & 6: Adversarial Anti-Web Search Quiz & Feynman Mastery
+- Generates passage-specific quizzes that cannot be answered via generic search engines.
 - Assesses conceptual understanding, provides immediate remediation, and logs attempts in the student dashboard.
+
 
 ---
 
