@@ -1,4 +1,5 @@
-# 🧠 StudyPrep.AI — Autonomous Multi-Agent Study System
+# 🧠 StudyPrep.AI — Autonomous Multi-Agent AI Study System
+### *Scientific Focus Profiling &bull; Circadian Timetable Scheduling &bull; Smart PDF Ingestion (RAG) &bull; Anti-Google Active Recall*
 
 <div align="center">
 
@@ -11,14 +12,13 @@
 
 ---
 
-### 🌟 Project Summary
-**StudyPrep.AI** is an intelligent **Multi-Agent AI Study System** designed to help students study smarter, prevent burnout, and master complex subjects.
-
-Instead of generic timetables and passive reading, StudyPrep.AI uses **AI agents and cognitive science** to test your attention stamina, create a personalized daily study schedule, provide instant line-level AI tutoring on your course materials, and test your real understanding with anti-Google quizzes.
+### 🌐 Official Project Description
+> **StudyPrep.AI** is an **Autonomous Multi-Agent AI Study System** built with **Scientific Focus & Retention Profiling**, **Personalized Circadian Timetable Scheduling**, **Smart Document Ingestion (RAG) with In-Line AI Tutoring**, and **Anti-Google Active Recall Quizzes**.
 
 [Architecture](#-multi-agent-system-architecture) • [Core Features (6 Phases)](#-the-six-phases-of-studyprepai) • [How It Works](#-how-the-ai-works) • [Quickstart Guide](#-quickstart-guide) • [Database Structure](#-database-structure)
 
 </div>
+
 
 ---
 
