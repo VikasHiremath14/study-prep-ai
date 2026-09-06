@@ -15,161 +15,207 @@
 ### 🌐 Official Project Description
 > **StudyPrep.AI** is an **Autonomous Multi-Agent AI Study System** built with **Scientific Focus & Retention Profiling**, **Personalized Circadian Timetable Scheduling**, **Smart Document Ingestion (RAG) with In-Line AI Tutoring**, and **Anti-Google Active Recall Quizzes**.
 
-[Architecture](#-multi-agent-system-architecture) • [Core Features (6 Phases)](#-the-six-phases-of-studyprepai) • [How It Works](#-how-the-ai-works) • [Quickstart Guide](#-quickstart-guide) • [Database Structure](#-database-structure)
+[Architecture](#-multi-agent-system-architecture) • [Core Modules](#-core-system-modules) • [How It Works](#-cognitive-science-foundations) • [API Endpoints](#-api-endpoints-overview) • [Quickstart Guide](#-quickstart-guide) • [Database Structure](#-database-structure)
 
 </div>
-
 
 ---
 
 ## 🚀 Key Highlights
 
-- 🧠 **Focus & Retention Test**: Measures your actual attention span and memory endurance with quick neurocognitive tests instead of guessing.
-- ⏰ **Smart Circadian Timetable**: Automatically builds a realistic daily timetable matching your wake time, sleep time, and focus stamina.
-- 🔄 **Smart Account Persistence**: Recognizes returning users instantly, saves all study records, and lets you reuse or recalibrate your timetable anytime.
-- 📖 **Distraction-Free PDF Reader**: Read textbooks and notes in a clean interface with a real-time synchronized clock.
-- 💡 **Instant Line-by-Line AI Tutor**: Highlight any sentence or paragraph to get instant explanations in 4 tutor styles (Socratic, First Principles, Simple ELI5, Exam Cram).
-- 🏆 **Anti-Web Search Quizzes**: Generates passage-specific quizzes that test deep understanding rather than simple memorization (answers cannot be easily googled).
-- 📋 **Student Records Dashboard**: Live dashboard showing your retention score, active timetable, saved notes, bookmarks, daily targets, and quiz attempts.
-- 🎬 **Atmospheric Cinematic Dark Theme**: Sleek dark-mode interface with high-tech science aesthetics and smooth transitions.
+- 🧠 **Scientific Focus & Retention Profiler**: Measures your empirical attention span and working memory capacity with interactive neurocognitive tests instead of arbitrary self-reports.
+- ⏰ **Circadian Timetable Scheduler**: Automatically constructs a balanced daily study schedule matched to your wake time, sleep time, cognitive peak hours, and break intervals.
+- 🔄 **Smart Student Account Persistence**: Seamlessly recognizes returning students, saves active timetables, bookmarks, and quiz histories, allowing instant continuation or recalibration.
+- 📖 **Distraction-Free PDF Reader**: Clean reader environment with margin annotations, quick bookmarks, and a real-time synchronized clock.
+- 💡 **In-Line AI Line Tutor**: Highlight any sentence or paragraph to trigger instant contextual explanations in 4 specialized pedagogical modes (*Socratic, First Principles, ELI5, Exam Cram*).
+- 🏆 **Anti-Web Search Active Recall Quizzes**: Generates passage-grounded active recall assessments testing conceptual depth that cannot be answered with a superficial search query.
+- 📋 **Live Student Records Dashboard**: Dedicated multi-tab records console providing unified visibility into retention scores, active timetables, daily study targets, notes, and quiz performance.
+- 🎬 **Cinematic Dark Theme**: Sleek, high-contrast user interface engineered for maximum visual comfort during extended study sessions.
 
 ---
 
 ## 🤖 Multi-Agent System Architecture
 
-StudyPrep.AI connects specialized AI agents that pass data seamlessly across your study workflow:
+StudyPrep.AI connects specialized autonomous agents that pass structured state across your learning workflow:
 
 ```mermaid
 graph TD
-    A[Student / User] -->|1. Sign In &amp; OTP| B[Phase 0: Auth &amp; Account Service]
-    B -->|New Student| C[Phase 1: Retention Profiler Agent]
-    B -->|Returning Student with Records| D[Phase 2: Timetable Scheduler Agent]
-    C -->|Retention Score &amp; Break Interval| D
-    D -->|Subjects &amp; Time Slots| E[Phase 3: Material Ingestion Agent]
-    E -->|Textbook Chunks &amp; Daily Targets| F[Phase 4: Active Reader &amp; AI Line Tutor]
-    F -->|Notes, Doubts &amp; Context| G[Phase 5 &amp; 6: Anti-Web Search Quiz Engine]
-    G -->|Quiz Scores &amp; Mastery Reports| H[(Student Records Dashboard)]
+    A[Student / User] -->|1. Sign In & OTP| B[Auth & Account Service]
+    B -->|New Student| C[Retention Profiler Agent]
+    B -->|Returning Student with Records| D[Timetable Scheduler Agent]
+    C -->|Retention Score & Break Interval| D
+    D -->|Subjects & Time Slots| E[Material Ingestion Agent]
+    E -->|Textbook Chunks & Daily Targets| F[Active Reader & AI Line Tutor]
+    F -->|Notes, Doubts & Context| G[Anti-Web Search Quiz Engine]
+    G -->|Quiz Scores & Mastery Reports| H[(Student Records Dashboard)]
 ```
 
-| Phase & Agent | What It Does | How It Works |
+| Agent / Service | Primary Responsibility | Technical Mechanism |
 | :--- | :--- | :--- |
-| **Phase 0: Auth & Records** | Handles login, OTP verification, and study history | Email & Mobile OTP, Google Login, Supabase / local SQLite database, and consolidated records modal |
-| **Phase 1: Retention Profiler** | Measures your focus span & optimal break intervals | 5 quick tests: SART attention vigilance, digit memory span, delayed recall, and video focus |
-| **Phase 2: Timetable Scheduler** | Builds a personalized, realistic study schedule | Circadian rhythm rules, meal/rest breaks, live countdown focus timer, and `.ics` calendar export |
-| **Phase 3: Material Ingestion** | Uploads course PDFs and creates daily page targets | Chunks textbook content and calculates how many pages to read daily based on your focus score |
-| **Phase 4: Active Reader & Tutor** | Distraction-free reading with instant doubt solver | Highlight text to ask doubts in 4 modes: Socratic, First Principles, ELI5 (Simple), Exam Cram |
-| **Phase 5 & 6: Anti-Web Search Quiz** | Tests real conceptual understanding | Generates questions directly from your reading material that cannot be found with a simple web search |
+| **Auth & Account Service** | User registration, authentication & session state | Email/Phone OTP, Google OAuth, Supabase Cloud & SQLite fallbacks |
+| **Retention Profiler Agent** | Cognitive endurance and focus span profiling | SART vigilance task, digit memory span, delayed recall, video focus |
+| **Timetable Scheduler Agent** | Personalized circadian study schedule generation | Chronobiological energy models, rest intervals, live timer, `.ics` export |
+| **Material Ingestion Agent** | Document parsing, text chunking & target pacing | PDF/EPUB extraction, vector RAG indexing, daily page capacity planner |
+| **Active Reader & AI Line Tutor** | Distraction-free study with inline doubt resolution | Selection popover with 4 tutor personas (Socratic, First Principles, ELI5, Exam Cram) |
+| **Anti-Web Search Quiz Engine** | Deep conceptual comprehension testing | Document-grounded query synthesis, distractor generation, instant scoring |
 
 ---
 
-## 📚 The Six Phases of StudyPrep.AI
+## 📚 Core System Modules
 
-### 🔐 Phase 0: Accounts & Student Records
-- **Fast Sign Up & Login**: Register with Name, Email, Phone number, and Password.
-- **OTP Verification**: 6-digit OTP sent via email/mobile with a convenient 1-click `[⚡ Auto-Fill & Enter]` button for fast local testing.
-- **Google One-Click Login**: Quick login option for instant access.
-- **Records Dashboard**: A dedicated popup dashboard with 5 tabs (*Retention Score, Active Timetable, Notes & Bookmarks, Daily Targets, Quiz History*).
-- **Clear Records Option**: Easily reset your study records to take a fresh retention test while keeping your account signed in.
+### 🔐 1. Authentication & Student Records Console
+- **Flexible Sign-In**: Register and log in using Email, Phone Number, Password, or Google One-Click Login.
+- **OTP Verification**: Secure 6-digit one-time password system with a 1-click `[⚡ Auto-Fill & Enter]` test shortcut for local development.
+- **Records Dashboard**: A unified 5-tab analytics drawer displaying:
+  - *Retention Score & Cognitive Tier*
+  - *Active Timetable & Time Blocks*
+  - *Saved Notes & Highlighted Bookmarks*
+  - *Daily Subject Reading Targets*
+  - *Historical Quiz Performance & Mastery Percentiles*
+- **Recalibration & Reset**: Reset saved records at any time to recalibrate your retention profile without having to recreate your account.
 
-### 🎯 Phase 1: Attention & Retention Profiler
-Takes less than 3 minutes to test your cognitive stamina:
-1. **SART Vigilance Test**: Tap numbers as they flash, but hold back when the number `3` appears.
-2. **Digit Span Memory**: Remember and repeat forward number sequences.
-3. **Delayed Free Recall**: Test what words you remember after a quick distractor task.
-4. **Video Focus Test**: Evaluates how easily you get distracted by short video clips.
-5. **Study Habits Survey**: Quick survey on your typical study duration.
-- **Result**: You receive an accurate composite **Retention Score** (e.g., 78%), a **Focus Tier** (*Deep Focus Master*, *Standard Collegiate*, *Sprint Pacer*), and your optimal study block duration (e.g., *45 mins study / 10 mins break*).
+### 🎯 2. Cognitive Attention & Retention Profiler
+Evaluates your cognitive focus in under 3 minutes across 5 neurocognitive benchmarks:
+1. **SART Vigilance Task**: Rapidly respond to random single digits while withholding responses for target number `3`.
+2. **Digit Span Memory**: Retain and reproduce digit sequences of increasing length.
+3. **Delayed Free Recall**: Measure short-term memory decay after an intermediate distractor task.
+4. **Video Focus Test**: Evaluates susceptibility to visual and auditory distractions.
+5. **Habits Survey**: Self-paced calibration of typical study duration and preferred pace.
+- **Output**: Composite **Retention Score** (0–100%), designated **Focus Tier** (*Deep Focus Master*, *Standard Collegiate*, *Sprint Pacer*), and calculated optimal study block lengths (e.g., 45m study / 10m break).
 
-### ⏰ Phase 2: Circadian Timetable & Scheduler
-- **Active Timetable Detection**: If you already have a saved timetable, the AI greets you with 3 options:
-  - 🟢 **Keep Existing Timetable & Proceed to Study Materials (Phase 3)**
+### ⏰ 3. Circadian Timetable Scheduler
+- **Active Timetable Detection**: When returning users sign in, the system offers 3 quick-action paths:
+  - 🟢 **Keep Existing Timetable & Proceed to Study Materials**
   - 🔵 **View & Track Current Timetable**
   - 🟡 **Create / Calibrate New Timetable**
-- **Circadian Pacing**: Places hard subjects during your peak morning energy window and schedules meal/rest breaks to avoid afternoon slumps.
-- **Live Focus Timer**: Click "Focus" on any study slot to start an interactive countdown timer with completion chimes.
-- **Calendar Export**: Download your schedule as a standard `.ics` file to import into Google Calendar or Apple Calendar.
+- **Circadian Pacing**: Prioritizes demanding subjects during morning peak alertness while scheduling strategic breaks around the post-lunch dip.
+- **Integrated Focus Countdown**: Launch dedicated focus countdown timers directly from any timetable block with completion alerts.
+- **Calendar Synchronization**: Export your optimized schedule directly as an `.ics` file for Google Calendar, Apple Calendar, and Outlook.
 
-### 📚 Phase 3: Content Ingestion & Daily Target Planner
-- Upload PDFs, lecture slides, and notes for your subjects.
-- The AI divides your textbooks into daily reading targets based on your retention score.
+### 📚 4. Content Ingestion & Daily Target Planner
+- Upload lecture notes, syllabus outlines, and textbook PDFs.
+- Automatically calculates daily target page counts aligned with your specific focus stamina and exam deadlines.
 
-### 📖 Phase 4: Distraction-Free Active Reader & AI Line Tutor
-- Read your study material in a clean, high-contrast viewer with a real-time laptop clock.
-- **Line-Level AI Tutor**: Highlight any sentence to open an AI popover with 4 explanation styles:
-  - **Socratic**: Asks guiding questions to help you think through the answer.
-  - **First Principles**: Explains the concept starting from fundamental building blocks.
-  - **ELI5 (Explain Like I'm 5)**: Uses simple real-world analogies.
-  - **Exam Cram**: Gives high-yield key points and exam definitions.
-- **Margin Notes & Bookmarks**: Add inline notes and bookmark important pages for quick review.
+### 📖 5. Distraction-Free Active Reader & AI Line Tutor
+- High-contrast, clean document reader accompanied by a live laptop clock.
+- **Contextual In-Line Tutor**: Highlight any phrase or complex paragraph to activate the tutor popover:
+  - **Socratic Mode**: Guides you toward the answer through step-by-step questions.
+  - **First Principles Mode**: Deconstructs concepts down to fundamental truths.
+  - **ELI5 Mode**: Explains difficult ideas using simple, intuitive analogies.
+  - **Exam Cram Mode**: Summarizes key formulas, definitions, and high-yield test points.
+- **Margin Notes & Bookmarking**: Keep notes alongside textbook paragraphs and jump back to key sections instantly.
 
-### 🏆 Phase 5 & 6: Anti-Web Search Quizzes & Mastery
-- Creates custom active-recall quizzes directly from the pages you just read.
-- Questions test deep conceptual logic rather than surface-level definitions, making them impossible to cheat with quick web searches.
-- Shows instant explanations for mistakes and tracks your improvement over time.
-
----
-
-## 🔬 How the AI Works
-
-StudyPrep.AI uses proven research from cognitive psychology and AI systems:
-- **Robertson et al. (1997)** — Sustained Attention to Response Task (SART) for measuring focus slips.
-- **Baddeley (1986) & Miller (1956)** — Working memory capacity limits ($7 \pm 2$ items).
-- **Roediger & Karpicke (2006)** — The testing effect and delayed recall for long-term memory retention.
-- **Gazzaley & Rosen (2016)** — The Distracted Mind research on managing digital distractions and dopamine loops.
-- **Kruger & Dunning (1999)** — Metacognitive calibration to prevent overconfident or unrealistic scheduling.
+### 🏆 6. Anti-Web Search Quiz Engine
+- Synthesizes conceptual questions rooted in the exact context of your uploaded materials.
+- Formulates multi-step reasoning problems that cannot be solved by simply copy-pasting into a search engine.
+- Instant feedback with detailed answer rationales and score tracking in the student records console.
 
 ---
 
-## 🛠️ Tech Stack
+## 🔬 Cognitive Science Foundations
+
+StudyPrep.AI incorporates foundational methodologies from cognitive psychology and learning science:
+- **Robertson et al. (1997)** — Sustained Attention to Response Task (SART) for measuring sustained attention lapses.
+- **Baddeley (1986) & Miller (1956)** — Working memory capacity limits ($7 \pm 2$ items) and chunking dynamics.
+- **Roediger & Karpicke (2006)** — The Testing Effect and active recall for robust memory consolidation.
+- **Gazzaley & Rosen (2016)** — The Distracted Mind framework for managing digital attention and cognitive interruptions.
+- **Kruger & Dunning (1999)** — Metacognitive calibration to prevent unrealistic study schedule overestimation.
+
+---
+
+## 🛠️ Tech Stack & Architecture
 
 - **Backend**: Python 3.9+, FastAPI, SQLAlchemy 2.0, Pydantic v2, Uvicorn
-- **Database**: SQLite (local) / PostgreSQL with Supabase (production)
-- **Frontend**: React 18, Vite, Lucide Icons, Modern CSS (Glassmorphism design)
-- **Testing**: Pytest (27 tests passing, 100% pass rate)
+- **Database**: PostgreSQL (Supabase Cloud) / SQLite (Local Zero-Config Fallback)
+- **Frontend**: React 18, Vite, Lucide Icons, Modern CSS (Glassmorphism design system)
+- **Testing**: Pytest (27 automated test cases, 100% passing)
+
+```
+AGENTIC AI PROJECT/
+├── backend/
+│   ├── agents/            # Multi-agent implementations (Retention, Scheduler, Reader, Quiz)
+│   ├── api/               # FastAPI routers (auth, documents, reader, retention, scheduler, quiz)
+│   ├── app/               # Application factory & FastAPI entrypoint
+│   ├── db/                # SQLAlchemy database models & session management
+│   ├── rag/               # Vector ingestion & retrieval pipeline
+│   └── tests/             # Pytest test suite (27 passing tests)
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # Modular React components (Auth, Reader, Scheduler, Quiz, etc.)
+│   │   ├── lib/           # Supabase client & API integration helpers
+│   │   ├── App.jsx        # Main application state machine & coordinator
+│   │   └── index.css      # Core design tokens & glassmorphic styling
+│   └── package.json
+├── .env.example           # Environment configuration template
+└── README.md              # Project documentation
+```
+
+---
+
+## 🔌 API Endpoints Overview
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register new user account with hashed credentials |
+| `POST` | `/api/auth/login` | Authenticate user and issue session token |
+| `POST` | `/api/auth/otp/send` | Generate and dispatch 6-digit OTP |
+| `POST` | `/api/auth/otp/verify` | Verify OTP code and activate account |
+| `GET` | `/api/auth/student-records` | Fetch unified student retention, timetable, and quiz records |
+| `POST` | `/api/auth/clear-records` | Reset student study records for fresh calibration |
+| `POST` | `/api/retention/calculate` | Compute retention score and optimal study intervals |
+| `POST` | `/api/scheduler/generate` | Generate circadian-aligned timetable schedule |
+| `POST` | `/api/documents/upload` | Ingest and chunk PDF/document study materials |
+| `POST` | `/api/reader/ask-tutor` | Request line-by-line explanation from AI Line Tutor |
+| `POST` | `/api/quiz/generate` | Generate anti-web search active recall quiz from reading material |
 
 ---
 
 ## ⚡ Quickstart Guide
 
-### 1. Clone the Project
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/VikasHiremath14/study-prep-ai.git
 cd study-prep-ai
 ```
 
-### 2. Backend Setup
+### 2. Configure Environment Variables
 ```bash
-# Move to backend folder
+cp .env.example .env
+```
+
+### 3. Backend Setup
+```bash
+# Navigate to backend directory
 cd backend
 
-# Create virtual environment
+# Create and activate virtual environment
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Start backend server
+# Start FastAPI backend server
 python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-*Backend runs on `http://127.0.0.1:8000` (Swagger API docs at `http://127.0.0.1:8000/docs`).*
+*Backend runs on `http://127.0.0.1:8000` with interactive Swagger API docs at `http://127.0.0.1:8000/docs`.*
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 ```bash
-# In a new terminal, move to frontend folder
+# In a new terminal, navigate to frontend directory
 cd frontend
 
-# Install packages
+# Install dependencies
 npm install
 
-# Start development server
+# Start Vite development server
 npm run dev
 ```
 *Frontend runs on `http://localhost:8080`.*
 
-### 4. Run Tests
+### 5. Run Automated Tests
 ```bash
-# From the project root folder
+# From the project root folder:
 backend/.venv/bin/pytest backend/tests -v
 ```
 
@@ -201,7 +247,7 @@ CREATE TABLE students (
     sleep_time VARCHAR(10) DEFAULT '23:30'
 );
 
--- Retention Profiles (Phase 1 Results)
+-- Retention Profiles (Focus Test Results)
 CREATE TABLE retention_profiles (
     id SERIAL PRIMARY KEY,
     student_id INTEGER UNIQUE REFERENCES students(id) ON DELETE CASCADE,
@@ -210,7 +256,7 @@ CREATE TABLE retention_profiles (
     details JSONB
 );
 
--- Timetable Schedules (Phase 2 Results)
+-- Timetable Schedules (Circadian Study Slots)
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
     student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,
@@ -226,10 +272,8 @@ CREATE TABLE schedules (
 
 - **Vikas Hiremath** — *Lead Developer* ([GitHub Profile](https://github.com/VikasHiremath14))
 
-
 ---
 
 <div align="center">
-  <sub>Built to help students study with high focus, smart schedules, and deep understanding.</sub>
+  <sub>Built to empower students with scientific focus profiling, smart circadian schedules, and deep active-recall understanding.</sub>
 </div>
-
