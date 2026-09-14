@@ -15,6 +15,10 @@ from backend.db.base import Base
 from backend.db.session import engine
 import backend.db.models  # Ensure all models are registered
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from backend.app.security import limiter
+
 # Create database tables if not created
 try:
     Base.metadata.create_all(bind=engine)
@@ -26,6 +30,10 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description="Multi-Agent AI Study Preparation and Retention Calibration System"
 )
+
+# SlowAPI Rate Limiter State
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 app.add_middleware(

@@ -421,7 +421,7 @@ export default function OnboardingWizard({ initialStudentData, onBackToProfile, 
               Candidate: <strong style={{ color: '#ffffff' }}>{formData.student_name}</strong> ({formData.grade_level})
             </span>
             <button
-              onClick={() => handleSubmitAll(formData)}
+              onClick={() => handleSubmit()}
               className="btn btn-primary"
               style={{
                 padding: '6px 12px',

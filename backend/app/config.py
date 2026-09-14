@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
+    # ── LangSmith Tracing (course: "Integrating LangSmith for LangChain Application Tracing") ──
+    # Set LANGCHAIN_TRACING_V2=true in .env to enable automatic LangSmith tracing for all chains.
+    LANGCHAIN_TRACING_V2: str = "false"
+    LANGCHAIN_API_KEY: str = ""
+    LANGCHAIN_PROJECT: str = "StudyPrepAI"
+    LANGCHAIN_ENDPOINT: str = "https://api.smith.langchain.com"
+
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
@@ -31,3 +38,11 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# ── Propagate LangSmith env vars so LangChain SDK picks them up automatically ──
+if settings.LANGCHAIN_TRACING_V2.lower() == "true":
+    os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+    os.environ.setdefault("LANGCHAIN_API_KEY", settings.LANGCHAIN_API_KEY)
+    os.environ.setdefault("LANGCHAIN_PROJECT", settings.LANGCHAIN_PROJECT)
+    os.environ.setdefault("LANGCHAIN_ENDPOINT", settings.LANGCHAIN_ENDPOINT)
+

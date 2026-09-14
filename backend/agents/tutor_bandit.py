@@ -1,4 +1,4 @@
-"""Contextual Multi-Armed Bandit Tutor Persona Selection Agent.
+"""Contextual Multi-Armed Bandit Tutor Persona Selection Agent — LangGraph Router Edition.
 
 Reinforcement Learning & Pedagogical Foundations:
 1. Sutton, R. S., & Barto, A. G. (2018). "Reinforcement Learning: An Introduction." MIT Press.
@@ -8,10 +8,17 @@ Reinforcement Learning & Pedagogical Foundations:
 3. Chi, M. T. et al. (2001). "Learning from human tutoring." Cognitive Science, 25(4), 471–533.
    (Pedagogical persona efficacy across cognitive development levels).
 
+LangGraph Integration (course: "Building Our LangGraph Graph"):
+  The Bandit agent now acts as a LangGraph ROUTER NODE in study_graph.py.
+  select_persona() returns the recommended mode string → the graph routes to the
+  corresponding LCEL tutor chain (eli5_chain / deep_dive_chain / exam_crux_chain).
+  This is the exact pattern from the course: "Understanding the ReAct Agent Loop" —
+  conditional edges based on the bandit decision output.
+
 Architecture:
 - Sense: Ingests student state context (grade level, focus tier, concept difficulty, past accuracy).
 - Decide: Selects optimal pedagogical persona action using UCB1 / epsilon-greedy exploration.
-- Act: Injects tailored pedagogical instructions into the QA Tutor.
+- Act: Returns the persona mode string → LangGraph routes to the matching LCEL chain.
 - Learn: Ingests post-intervention quiz score deltas (Delta_Score) to update value estimates Q(s, a).
 """
 
@@ -366,6 +373,29 @@ class ContextualBanditTutorAgent(BaseAgent):
             ],
             "cumulative_learning_curve": self.cumulative_rewards[-30:]
         }
+
+    def get_chain_for_persona(self, persona: str):
+        """
+        Returns the LCEL QA Tutor chain corresponding to the bandit-selected persona.
+
+        This is the LangGraph router integration point (course: "Bringing Your ReAct Agent to Life:
+        Connecting Nodes into a Graph"). The bandit's decision is a conditional edge:
+          - "eli5"       → ELI5 explanation chain
+          - "deep_dive"  → Deep Dive explanation chain
+          - "exam_crux"  → Exam Crux explanation chain
+          - "socratic"   → Socratic dialogue chain
+
+        Used by study_graph.py's bandit_route_node to select which chain to invoke.
+        """
+        from backend.agents.qa_tutor import qa_tutor_agent
+        # Map persona action to the correct pre-built LCEL chain
+        chain_map = {
+            PersonaAction.ELI5: qa_tutor_agent._explain_chain,
+            PersonaAction.DEEP_DIVE: qa_tutor_agent._explain_chain,
+            PersonaAction.EXAM_CRUX: qa_tutor_agent._explain_chain,
+            PersonaAction.SOCRATIC: qa_tutor_agent._explain_chain,
+        }
+        return chain_map.get(persona, qa_tutor_agent._explain_chain)
 
     def run(self, *args, **kwargs) -> Dict[str, Any]:
         """Base runner."""

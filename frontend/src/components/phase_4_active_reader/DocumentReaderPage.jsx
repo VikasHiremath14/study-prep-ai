@@ -161,6 +161,34 @@ export default function DocumentReaderPage({
   const [remainingSlotSeconds, setRemainingSlotSeconds] = useState(0);
   const [hasAutoMatchedInitialDoc, setHasAutoMatchedInitialDoc] = useState(false);
 
+  // Bug 5b: Break-time detection on reader launch
+  const [showBreakModal, setShowBreakModal] = useState(false);
+  const [breakSlotInfo, setBreakSlotInfo] = useState(null);
+
+  // On mount: check if current time falls on a break slot
+  useEffect(() => {
+    const slots = timetableData?.slots || [];
+    if (!slots.length) return;
+    const now = new Date();
+    const currentSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    for (const slot of slots) {
+      if (!slot.start || !slot.end) continue;
+      const [sh, sm] = slot.start.split(':').map(Number);
+      const [eh, em] = slot.end.split(':').map(Number);
+      const startSecs = sh * 3600 + sm * 60;
+      const endSecs = eh * 3600 + em * 60;
+      if (currentSecs >= startSecs && currentSecs < endSecs) {
+        const isBreak = slot.type === 'break' || slot.type === 'active_reset' || slot.type === 'rest';
+        const isNotStudy = slot.type !== 'focus_slot' && slot.type !== 'study' && slot.type !== 'deep_study';
+        if (isBreak || isNotStudy) {
+          setBreakSlotInfo({ start: slot.start, end: slot.end, label: slot.title || slot.label || 'Break' });
+          setShowBreakModal(true);
+        }
+        break;
+      }
+    }
+  }, [timetableData]);
+
   const theme = THEMES[themeKey] || THEMES.dark;
   const currentPage = pages.find(p => p.page_number === currentPageNum) || pages[0] || { page_number: 1, text: "No content available on this page." };
 
@@ -400,6 +428,78 @@ export default function DocumentReaderPage({
       display: 'flex',
       flexDirection: 'column'
     }}>
+
+      {/* Bug 5b: Break-Time Detection Modal */}
+      {showBreakModal && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(14px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'rgba(15,23,42,0.98)',
+            border: '1px solid rgba(16,185,129,0.4)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(16,185,129,0.15)',
+            borderRadius: '20px',
+            padding: '40px 36px',
+            maxWidth: '440px',
+            width: '100%',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>☕</div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', margin: '0 0 8px 0' }}>
+              It&apos;s Break Time!
+            </h2>
+            {breakSlotInfo && (
+              <p style={{ fontSize: '0.9rem', color: '#34d399', fontWeight: 600, marginBottom: '6px' }}>
+                {breakSlotInfo.start} &ndash; {breakSlotInfo.end}
+              </p>
+            )}
+            <p style={{ fontSize: '0.84rem', color: '#94a3b8', marginBottom: '32px', lineHeight: 1.6 }}>
+              Your circadian timetable says it&apos;s rest time right now.
+              Taking breaks improves memory consolidation — but you can study anyway if you wish.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setShowBreakModal(false)}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #6366f1, #10b981)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(99,102,241,0.4)'
+                }}
+              >
+                📖 Study Anyway
+              </button>
+              <button
+                onClick={() => { setShowBreakModal(false); if (onBackToIngestion) onBackToIngestion(); }}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '10px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#94a3b8',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                ← View Timetable
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* TOP FLOATING NAVIGATION & CONTROL BAR */}
       <header style={{

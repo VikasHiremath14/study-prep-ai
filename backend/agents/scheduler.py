@@ -9,6 +9,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta, date
 from pydantic import BaseModel, Field
 from backend.agents.base import BaseAgent
+# llm_service now uses LangChain LCEL chains internally (ChatGoogleGenerativeAI)
 from backend.app.llm import llm_service
 
 
@@ -464,6 +465,8 @@ Busy Windows Handled: {len(payload.busy_slots)}
 
 Provide a concise, highly motivating 2-3 sentence strategic rationale explaining how this schedule respects meals, work commitments, and circadian memory consolidation.
 """
+        # ── LangChain LCEL rationale chain ────────────────────────────────────
+        # Course: "Building a LangChain Chain" — llm_service now uses LCEL internally
         llm_explanation = llm_service.generate_text_sync(
             llm_prompt,
             system_instruction="You are an expert AI Study Scheduling Agent. Provide a concise, highly motivating 2-3 sentence strategic rationale."
@@ -611,6 +614,7 @@ Night Cramming: {has_night_cramming}.
 
 Write a sharp, empathetic, and scientifically constructive diagnostic feedback (2-3 sentences) explaining the main flaw in their raw schedule and how the auto-corrected timetable fixes it.
 """
+        # ── LangChain LCEL diagnosis chain ────────────────────────────────────
         agent_feedback = llm_service.generate_text_sync(
             ai_diagnosis_prompt,
             system_instruction="You are an expert cognitive scheduling AI. Provide sharp, compassionate, scientifically backed feedback."

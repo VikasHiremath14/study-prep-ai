@@ -74,9 +74,18 @@ def test_agentic_explain_and_feedback_api(client):
     assert explain_res.status_code == 200
     explain_data = explain_res.json()
     assert explain_data.get("agentic_mode") is True
-    assert "bandit_decision" in explain_data
-    assert "recommended_persona" in explain_data["bandit_decision"]
-    decision_id = explain_data["bandit_decision"].get("decision_id")
+    # LangGraph response: decision_id and persona_used are now top-level fields
+    # (previously nested under bandit_decision — updated for LangGraph StateGraph)
+    assert (
+        "bandit_decision" in explain_data  # direct fallback path
+        or "persona_used" in explain_data  # LangGraph path
+        or "decision_id" in explain_data   # LangGraph path
+    )
+    # Extract decision_id from either response shape
+    decision_id = (
+        explain_data.get("decision_id")
+        or (explain_data.get("bandit_decision") or {}).get("decision_id")
+    )
 
     # Test bandit stats endpoint
     stats_res = client.get("/api/reader/bandit-stats")

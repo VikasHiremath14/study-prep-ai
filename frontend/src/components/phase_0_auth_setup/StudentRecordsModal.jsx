@@ -22,7 +22,8 @@ import {
   TrendingUp,
   Tag,
   Sparkles,
-  Check
+  Check,
+  Activity
 } from 'lucide-react';
 
 export default function StudentRecordsModal({ 
@@ -45,6 +46,13 @@ export default function StudentRecordsModal({
   const [localTargets, setLocalTargets] = useState([]);
   const [localQuizzes, setLocalQuizzes] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
+
+  // Bug 2: Hover tooltip state for ML Forgetting Curve SVG
+  const [curveHover, setCurveHover] = useState(null); // { x, y, hours, prob }
+
+  // HLR History State
+  const [localHlrHistory, setLocalHlrHistory] = useState([]);
+  const [showHlrHistory, setShowHlrHistory] = useState(false);
 
   const studentId = studentProfile?.id || studentProfile?.student_id || currentUser?.id;
 
@@ -77,6 +85,14 @@ export default function StudentRecordsModal({
         setLocalQuizzes(Array.isArray(parsed) ? parsed : []);
       } else {
         setLocalQuizzes([]);
+      }
+
+      const savedHlr = localStorage.getItem(`study_prep_hlr_history_${userKey}`);
+      if (savedHlr) {
+        const parsed = JSON.parse(savedHlr);
+        setLocalHlrHistory(Array.isArray(parsed) ? parsed : []);
+      } else {
+        setLocalHlrHistory([]);
       }
     } catch (e) {
       setLocalNotes([]);
@@ -492,9 +508,25 @@ export default function StudentRecordsModal({
                   <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#ffffff' }}>
                     Predicted Memory Decay Curve (0 to 168 Hours / 7 Days)
                   </span>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.68rem' }}>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '0.68rem', alignItems: 'center' }}>
                     <span style={{ color: '#06b6d4' }}>● Trained Duolingo HLR</span>
                     <span style={{ color: '#a78bfa' }}>--- Classical Ebbinghaus</span>
+                    <button 
+                      onClick={() => setShowHlrHistory(true)}
+                      style={{
+                        background: 'rgba(6, 182, 212, 0.15)',
+                        border: '1px solid rgba(6, 182, 212, 0.4)',
+                        color: '#67e8f9',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        marginLeft: '10px'
+                      }}
+                    >
+                      View HLR History
+                    </button>
                   </div>
                 </div>
 
@@ -535,7 +567,9 @@ export default function StudentRecordsModal({
 
                     {/* Theoretical Ebbinghaus Path */}
                     {(() => {
-                      const pts = (retentionDetails?.forgetting_curve_ml?.decay_curve || []).map((pt, idx) => {
+                      const latestCurve = localHlrHistory[0]?.decay_curve || retentionDetails?.forgetting_curve_ml?.decay_curve || [];
+                      if (!latestCurve.length) return null;
+                      const pts = latestCurve.map((pt, idx) => {
                         const x = 50 + (pt.time_hours / 168.0) * 650;
                         const y = 175 - (pt.ebbinghaus_baseline * 145);
                         return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
@@ -545,7 +579,7 @@ export default function StudentRecordsModal({
 
                     {/* Trained Duolingo HLR Area Fill */}
                     {(() => {
-                      const curveData = retentionDetails?.forgetting_curve_ml?.decay_curve || [];
+                      const curveData = localHlrHistory[0]?.decay_curve || retentionDetails?.forgetting_curve_ml?.decay_curve || [];
                       if (!curveData.length) return null;
                       const pts = curveData.map((pt, idx) => {
                         const x = 50 + (pt.time_hours / 168.0) * 650;
@@ -558,13 +592,30 @@ export default function StudentRecordsModal({
                         <>
                           <path d={areaD} fill="url(#curveGradientModal)" />
                           <path d={pts} fill="none" stroke="#06b6d4" strokeWidth="2.5" />
+                          {/* Bug 2: Interactive hover dots on each curve point */}
+                          {curveData.map((pt, idx) => {
+                            const cx = 50 + (pt.time_hours / 168.0) * 650;
+                            const cy = 175 - (pt.predicted_recall_prob * 145);
+                            return (
+                              <circle
+                                key={idx}
+                                cx={cx} cy={cy} r="5"
+                                fill="transparent"
+                                stroke="transparent"
+                                strokeWidth="10"
+                                style={{ cursor: 'crosshair' }}
+                                onMouseEnter={() => setCurveHover({ x: cx, y: cy, hours: pt.time_hours, prob: Math.round(pt.predicted_recall_prob * 100) })}
+                                onMouseLeave={() => setCurveHover(null)}
+                              />
+                            );
+                          })}
                         </>
                       );
                     })()}
 
                     {/* Half-Life Marker Point */}
                     {(() => {
-                      const hl = retentionDetails?.forgetting_curve_ml?.predicted_half_life_hours || 32.4;
+                      const hl = localHlrHistory[0]?.new_half_life || retentionDetails?.forgetting_curve_ml?.predicted_half_life_hours || 32.4;
                       const x = 50 + Math.min(1.0, hl / 168.0) * 650;
                       return (
                         <g>
@@ -576,6 +627,27 @@ export default function StudentRecordsModal({
                         </g>
                       );
                     })()}
+
+                    {/* Bug 2: Hover Tooltip overlay */}
+                    {curveHover && (
+                      <g>
+                        <line x1={curveHover.x} y1="25" x2={curveHover.x} y2="175" stroke="#06b6d4" strokeOpacity="0.4" strokeDasharray="3 3" />
+                        <rect
+                          x={curveHover.x > 600 ? curveHover.x - 90 : curveHover.x + 8}
+                          y={curveHover.y - 22}
+                          width="82" height="28" rx="5"
+                          fill="rgba(6,182,212,0.92)" stroke="#06b6d4" strokeWidth="1"
+                        />
+                        <text
+                          x={curveHover.x > 600 ? curveHover.x - 49 : curveHover.x + 49}
+                          y={curveHover.y - 9}
+                          fill="#ffffff" fontSize="8" fontWeight="700" textAnchor="middle"
+                        >
+                          {curveHover.hours}h → {curveHover.prob}% recall
+                        </text>
+                        <circle cx={curveHover.x} cy={curveHover.y} r="4" fill="#ffffff" stroke="#06b6d4" strokeWidth="2" />
+                      </g>
+                    )}
                   </svg>
                 </div>
               </div>
@@ -624,35 +696,42 @@ export default function StudentRecordsModal({
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {slots.map((slot, idx) => (
-                      <div key={idx} style={{
-                        padding: '12px 14px',
-                        borderRadius: '8px',
-                        background: slot.type === 'focus_slot' ? 'rgba(99, 102, 241, 0.12)' : 'rgba(16, 185, 129, 0.1)',
-                        border: `1px solid ${slot.type === 'focus_slot' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(16, 185, 129, 0.25)'}`,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <Clock size={15} color={slot.type === 'focus_slot' ? '#818cf8' : '#34d399'} />
-                          <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#ffffff' }}>
-                            {slot.start} - {slot.end}
-                          </span>
-                          <span style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
-                            {slot.subject || slot.label || (slot.type === 'focus_slot' ? 'Deep Study' : 'Active Reset')}
+                    {slots.map((slot, idx) => {
+                      // Bug 3: Handle all scheduler slot type variants
+                      const isStudy = slot.type === 'focus_slot' || slot.type === 'study' || slot.type === 'deep_study';
+                      const isBreak = slot.type === 'break' || slot.type === 'active_reset' || slot.type === 'rest' || (!isStudy);
+                      const slotLabel = slot.subject || slot.title || slot.label ||
+                        (isStudy ? '📚 Deep Study Block' : '☕ Active Reset');
+                      return (
+                        <div key={idx} style={{
+                          padding: '12px 14px',
+                          borderRadius: '8px',
+                          background: isStudy ? 'rgba(99, 102, 241, 0.12)' : 'rgba(16, 185, 129, 0.1)',
+                          border: `1px solid ${isStudy ? 'rgba(99, 102, 241, 0.3)' : 'rgba(16, 185, 129, 0.25)'}`,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Clock size={15} color={isStudy ? '#818cf8' : '#34d399'} />
+                            <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#ffffff' }}>
+                              {slot.start} - {slot.end}
+                            </span>
+                            <span style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
+                              {slotLabel}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            color: isStudy ? '#a5b4fc' : '#6ee7b7'
+                          }}>
+                            {isStudy ? 'Focus Block' : 'Break'}
                           </span>
                         </div>
-                        <span style={{
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          color: slot.type === 'focus_slot' ? '#a5b4fc' : '#6ee7b7'
-                        }}>
-                          {slot.type === 'focus_slot' ? 'Focus Block' : 'Break'}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
@@ -992,6 +1071,94 @@ export default function StudentRecordsModal({
           </div>
         </div>
       </div>
+
+      {/* HLR History Modal */}
+      {showHlrHistory && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100
+        }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid rgba(6, 182, 212, 0.3)',
+            borderRadius: '16px',
+            width: '90%',
+            maxWidth: '550px',
+            maxHeight: '80vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#67e8f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Activity size={20} />
+                Dynamic HLR Update History
+              </h3>
+              <button onClick={() => setShowHlrHistory(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ padding: '20px', overflowY: 'auto' }}>
+              {localHlrHistory.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 0' }}>
+                  No dynamic updates yet. Take a quiz or complete a study target to see your memory half-life mathematically shift!
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {localHlrHistory.map((h, i) => {
+                    const diff = h.new_half_life - h.old_half_life;
+                    const isPositive = diff >= 0;
+                    return (
+                      <div key={i} style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '12px',
+                        padding: '16px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+                            {h.formatted_date || h.timestamp}
+                          </span>
+                          <span style={{ 
+                            fontSize: '0.75rem', 
+                            fontWeight: 700,
+                            color: isPositive ? '#34d399' : '#f87171',
+                            background: isPositive ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+                            padding: '2px 8px',
+                            borderRadius: '100px'
+                          }}>
+                            {isPositive ? '+' : ''}{diff.toFixed(1)}h Shift
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.95rem', color: '#ffffff', fontWeight: 600, marginBottom: '12px' }}>
+                          Trigger: {h.reason}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px' }}>Previous Half-Life</div>
+                            <div style={{ fontSize: '1.2rem', color: '#94a3b8', fontWeight: 700 }}>{h.old_half_life}h</div>
+                          </div>
+                          <ArrowRight size={20} color="var(--text-dim)" />
+                          <div style={{ flex: 1, background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.2)', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#67e8f9', textTransform: 'uppercase', marginBottom: '4px' }}>New Half-Life</div>
+                            <div style={{ fontSize: '1.2rem', color: '#22d3ee', fontWeight: 700 }}>{h.new_half_life}h</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

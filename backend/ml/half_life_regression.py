@@ -92,7 +92,10 @@ class HalfLifeRegressionModel:
         train_idx, val_idx = indices[:split_idx], indices[split_idx:]
         
         X_train, t_train, p_train = X[train_idx], delta_t[train_idx], p_actual[train_idx]
-        X_val, t_val, p_val = X[val_idx], delta_t[val_idx], p_actual[val_idx] if len(val_idx) > 0 else (X_train, t_train, p_train)
+        if len(val_idx) > 0:
+            X_val, t_val, p_val = X[val_idx], delta_t[val_idx], p_actual[val_idx]
+        else:
+            X_val, t_val, p_val = X_train, t_train, p_train
 
         LN2 = math.log(2.0)
         LN2_SQ = LN2 ** 2

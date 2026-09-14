@@ -986,25 +986,6 @@ export default function DocumentIngestionPage({
                         {t.pages_count} pages &bull; ~{t.estimated_focus_minutes} mins focus block
                       </span>
                     </div>
-
-                    <button
-                      onClick={() => handleToggleDayComplete(t.day_number)}
-                      style={{
-                        width: '26px',
-                        height: '26px',
-                        borderRadius: '6px',
-                        background: isDone ? '#10b981' : 'rgba(255,255,255,0.06)',
-                        border: isDone ? 'none' : '1px solid var(--border-subtle)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: '#ffffff'
-                      }}
-                      title={isDone ? "Mark incomplete" : "Mark completed"}
-                    >
-                      {isDone && <Check size={14} />}
-                    </button>
                   </div>
                 );
               })}

@@ -228,6 +228,69 @@ export default function AntiWebSearchQuizModal({
         setSubmissionResult(data);
         playMasteryChime(data.is_mastered);
 
+        // --- DYNAMIC HLR MATH UPDATE (Phase 6 Mastery Closed-Loop) ---
+        try {
+          const scorePercent = data.score_percent != null ? data.score_percent : 
+            (Object.values(selectedAnswers).filter((ans, i) => ans === questions[i].correct_index).length / questions.length) * 100;
+          
+          const studentStr = localStorage.getItem('study_prep_student');
+          if (studentStr) {
+            const student = JSON.parse(studentStr);
+            const currentHl = student?.profile?.forgetting_curve_ml?.predicted_half_life_hours || 32.4;
+            
+            // Calculate new half-life based on score (Spaced Repetition Multiplier)
+            let multiplier = 1.0;
+            if (scorePercent >= 90) multiplier = 2.1;
+            else if (scorePercent >= 70) multiplier = 1.5;
+            else if (scorePercent >= 50) multiplier = 1.1;
+            else multiplier = 0.6; // penalty for failing
+            
+            const newHl = parseFloat((currentHl * multiplier).toFixed(1));
+            
+            // Generate new 168h decay curve mathematically: p = 2^(-Δt / h)
+            const newCurve = [];
+            for (let h = 0; h <= 168; h += 24) {
+              const p = Math.pow(2, -h / newHl);
+              newCurve.push({
+                time_hours: h,
+                ebbinghaus_baseline: Math.pow(2, -h / 24), // standard ebbinghaus baseline for comparison
+                predicted_recall_prob: parseFloat(p.toFixed(3))
+              });
+            }
+            
+            // Update student profile with new HLR data
+            if (!student.profile) student.profile = {};
+            if (!student.profile.forgetting_curve_ml) student.profile.forgetting_curve_ml = {};
+            student.profile.forgetting_curve_ml.predicted_half_life_hours = newHl;
+            student.profile.forgetting_curve_ml.predicted_half_life_days = parseFloat((newHl / 24).toFixed(2));
+            student.profile.forgetting_curve_ml.recall_prob_24h = Math.pow(2, -24 / newHl);
+            student.profile.forgetting_curve_ml.recall_prob_7d = Math.pow(2, -168 / newHl);
+            student.profile.forgetting_curve_ml.decay_curve = newCurve;
+            
+            localStorage.setItem('study_prep_student', JSON.stringify(student));
+            
+            // Save to HLR History Tracker Array
+            const userKey = studentId || 'default';
+            const historyKey = `study_prep_hlr_history_${userKey}`;
+            const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            history.unshift({
+              timestamp: new Date().toISOString(),
+              formatted_date: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+              reason: `Anti-Web Search Quiz Score: ${Math.round(scorePercent)}%`,
+              old_half_life: currentHl,
+              new_half_life: newHl,
+              decay_curve: newCurve,
+              recall_24h: Math.pow(2, -24 / newHl),
+              recall_7d: Math.pow(2, -168 / newHl)
+            });
+            // Keep last 10 entries only
+            localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 10)));
+          }
+        } catch (e) {
+          console.error("Failed to update dynamic HLR curve:", e);
+        }
+        // --- END DYNAMIC HLR UPDATE ---
+
         // Sync quiz attempt to localStorage for the student records dashboard (both user-scoped and global)
         try {
           const userKey = studentId || 'default';

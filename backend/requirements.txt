@@ -1,17 +1,50 @@
+# ─── Web Framework ────────────────────────────────────────────────────────────
 fastapi>=0.110.0
 uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9
+
+# ─── Data Validation & Config ─────────────────────────────────────────────────
 pydantic>=2.6.0
 pydantic-settings>=2.2.0
+
+# ─── Database ─────────────────────────────────────────────────────────────────
 sqlalchemy>=2.0.28
 alembic>=1.13.1
 pgvector>=0.2.5
 psycopg2-binary>=2.9.9
 python-dotenv>=1.0.1
+
+# ─── HTTP & Async ─────────────────────────────────────────────────────────────
 httpx>=0.27.0
+
+# ─── Document Parsing ─────────────────────────────────────────────────────────
+pypdf>=4.1.0
+python-docx>=1.1.0
+
+# ─── ML / Numerics ────────────────────────────────────────────────────────────
+numpy>=1.24.0
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
 pytest>=8.1.0
 pytest-asyncio>=0.23.5
-pypdf>=4.1.0
+
+# ─── LangChain Core (LCEL, Prompt Templates, Output Parsers) ──────────────────
+langchain>=0.3.0
+langchain-core>=0.3.0
+
+# ─── LangChain Google Gemini Integration ──────────────────────────────────────
+langchain-google-genai>=2.0.0
+
+# ─── LangGraph (State Machines & Multi-Agent Orchestration) ───────────────────
+langgraph>=0.2.0
+
+# ─── LangSmith (Tracing & Observability) ──────────────────────────────────────
+langsmith>=0.1.0
+
+# ─── Vector Store (ChromaDB for RAG) ──────────────────────────────────────────
+chromadb>=0.5.0
+langchain-chroma>=0.1.0
+
+# ─── Legacy Google GenAI SDK (kept for multimodal vision features) ─────────────
 google-genai>=0.1.1
-python-multipart>=0.0.9
-python-docx>=1.1.0
-numpy>=1.24.0
+

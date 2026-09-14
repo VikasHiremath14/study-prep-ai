@@ -133,6 +133,17 @@ export default function App() {
         localStorage.removeItem('study_prep_notes');
         localStorage.removeItem('study_prep_targets');
         localStorage.removeItem('study_prep_quizzes');
+        // Bug 4 & HLR History: Also clear ALL scoped notes/targets/quizzes/hlr keys from previous account
+        Object.keys(localStorage).forEach(key => {
+          if (
+            key.startsWith('study_prep_notes_') ||
+            key.startsWith('study_prep_targets_') ||
+            key.startsWith('study_prep_quizzes_') ||
+            key.startsWith('study_prep_hlr_history_')
+          ) {
+            localStorage.removeItem(key);
+          }
+        });
       } catch (e) {}
     }
 

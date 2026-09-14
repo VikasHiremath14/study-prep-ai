@@ -44,8 +44,8 @@ Scientific Foundations & Research Citations:
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from backend.agents.base import BaseAgent
-from backend.app.llm import llm_service
 from backend.ml.half_life_regression import hlr_model
+# llm_service is now accessed via self.llm (LangChain ChatModel from BaseAgent)
 
 
 # ---------------------------------------------------------
@@ -308,7 +308,11 @@ class RetentionProfilerAgent(BaseAgent):
             "sart_commission_errors": comm_errors
         }
 
-        ai_synthesis = llm_service.synthesize_retention_diagnosis(
+        # ── LangChain LCEL synthesis via the updated llm_service ──────────────
+        # llm_service now uses ChatGoogleGenerativeAI + LCEL chains internally
+        # (course: "Building a LangChain Chain" applied to cognitive profiling)
+        from backend.app.llm import llm_service as lc_llm_service
+        ai_synthesis = lc_llm_service.synthesize_retention_diagnosis(
             student_name=payload.student_name,
             grade_level=payload.grade_level,
             retention_score=retention_score,

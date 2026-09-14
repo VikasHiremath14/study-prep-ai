@@ -261,65 +261,94 @@ def agentic_explain_selection(
     payload: AgenticExplainRequest,
     db: Session = Depends(get_db)
 ):
-    """Reinforcement-Learning driven agentic explanation: autonomously selects optimal persona based on student context."""
-    from backend.agents.tutor_bandit import tutor_bandit_agent
+    """
+    LangGraph-powered agentic explanation endpoint.
 
-    # 1. Fetch student retention focus tier from DB if student_id available
+    Routes through the full LangGraph StateGraph:
+      retrieve_node → bandit_route_node → explain_node → [quiz_node → reward_node]
+
+    Course: "[Hands On] Running Our LangGraph React Agent with Function Calling"
+    """
+    # 1. Fetch student focus tier from DB if available
     focus_tier = payload.focus_tier or "Standard Collegiate Rhythm"
     if payload.student_id:
         student = db.query(Student).filter(Student.id == payload.student_id).first()
         if student and student.retention_profile and student.retention_profile.details:
             focus_tier = student.retention_profile.details.get("focus_tier", focus_tier)
 
-    # 2. Contextual Bandit Action Selection
+    # 2. Handle manual persona override (bypasses LangGraph bandit routing)
     if payload.force_persona:
-        chosen_persona = payload.force_persona
-        bandit_meta = {
-            "status": "manual_override",
-            "recommended_persona": chosen_persona,
-            "is_exploration": False,
-            "estimated_retention_uplift": "+15%"
-        }
-    else:
+        relevant_chunks = []
+        if payload.document_id:
+            chunks = db.query(Chunk).filter(
+                Chunk.document_id == payload.document_id,
+                Chunk.page_number == payload.page_number
+            ).all()
+            relevant_chunks = [c.chunk_text for c in chunks]
+        explain_req = ExplainRequest(
+            document_id=payload.document_id,
+            page_number=payload.page_number,
+            selected_text=payload.selected_text,
+            surrounding_context=payload.surrounding_context,
+            grade_level=payload.grade_level,
+            mode=payload.force_persona,
+            document_title=payload.document_title,
+        )
+        result = qa_tutor_agent.explain_selection(explain_req, relevant_chunks=relevant_chunks)
+        result["agentic_mode"] = True
+        result["bandit_decision"] = {"status": "manual_override", "recommended_persona": payload.force_persona}
+        return result
+
+    # 3. Run through the LangGraph StateGraph
+    # Course: "invoke_study_session" = graph.invoke(initial_state)
+    try:
+        from backend.agents.study_graph import invoke_study_session
+        graph_result = invoke_study_session(
+            student_id=payload.student_id or 1,
+            grade_level=payload.grade_level,
+            focus_tier=focus_tier,
+            document_id=payload.document_id or 1,
+            document_title=payload.document_title or "Academic Textbook",
+            selected_text=payload.selected_text,
+            page_number=payload.page_number,
+            surrounding_context=payload.surrounding_context,
+            generate_quiz=False,
+        )
+        graph_result["agentic_mode"] = True
+        graph_result["powered_by"] = "LangGraph StateGraph"
+        return graph_result
+
+    except Exception as e:
+        # Fallback to direct bandit + tutor if LangGraph fails
+        from backend.agents.tutor_bandit import tutor_bandit_agent
         bandit_meta = tutor_bandit_agent.select_persona(
             student_id=payload.student_id or 1,
             grade_level=payload.grade_level,
             focus_tier=focus_tier,
-            concept_difficulty=payload.concept_difficulty or "medium"
+            concept_difficulty=payload.concept_difficulty or "medium",
         )
         chosen_persona = bandit_meta["recommended_persona"]
-
-    # 3. Retrieve textbook chunks
-    relevant_chunks = []
-    if payload.document_id:
-        chunks = db.query(Chunk).filter(
-            Chunk.document_id == payload.document_id,
-            Chunk.page_number == payload.page_number
-        ).all()
-        relevant_chunks = [c.chunk_text for c in chunks]
-
-    if not relevant_chunks and not payload.surrounding_context and payload.document_id:
-        page = db.query(Page).filter(
-            Page.document_id == payload.document_id,
-            Page.page_number == payload.page_number
-        ).first()
-        if page and page.text:
-            relevant_chunks = [page.text]
-
-    # 4. Generate Explanation via QA Tutor
-    explain_req = ExplainRequest(
-        document_id=payload.document_id,
-        page_number=payload.page_number,
-        selected_text=payload.selected_text,
-        surrounding_context=payload.surrounding_context,
-        grade_level=payload.grade_level,
-        mode=chosen_persona,
-        document_title=payload.document_title
-    )
-    result = qa_tutor_agent.explain_selection(explain_req, relevant_chunks=relevant_chunks)
-    result["agentic_mode"] = True
-    result["bandit_decision"] = bandit_meta
-    return result
+        relevant_chunks = []
+        if payload.document_id:
+            chunks = db.query(Chunk).filter(
+                Chunk.document_id == payload.document_id,
+                Chunk.page_number == payload.page_number
+            ).all()
+            relevant_chunks = [c.chunk_text for c in chunks]
+        explain_req = ExplainRequest(
+            document_id=payload.document_id,
+            page_number=payload.page_number,
+            selected_text=payload.selected_text,
+            surrounding_context=payload.surrounding_context,
+            grade_level=payload.grade_level,
+            mode=chosen_persona,
+            document_title=payload.document_title,
+        )
+        result = qa_tutor_agent.explain_selection(explain_req, relevant_chunks=relevant_chunks)
+        result["agentic_mode"] = True
+        result["bandit_decision"] = bandit_meta
+        result["powered_by"] = "Direct (LangGraph fallback)"
+        return result
 
 
 @router.get("/bandit-stats")
@@ -356,4 +385,74 @@ def toggle_page_bookmark(
         db.add(new_bm)
         db.commit()
         return {"status": "success", "is_bookmarked": True, "page_number": payload.page_number}
+
+
+class ReactAgentRequest(BaseModel):
+    query: str
+    student_id: Optional[int] = 1
+    thread_id: Optional[str] = None
+
+
+@router.post("/react-agent")
+def run_react_agent(payload: ReactAgentRequest):
+    """
+    Executes a multi-tool ReAct Agent loop (Course: Section 6 & 7).
+    The agent dynamically selects between ChromaDB retrieval, concept explanations,
+    quiz generation, retention risk analysis, study scheduling, and web search.
+    """
+    from backend.agents.tools import create_study_react_agent, STUDY_TOOLS
+
+    active_thread = payload.thread_id or f"student_{payload.student_id}_react"
+    agent = create_study_react_agent()
+
+    if agent is None:
+        # Graceful offline mode: execute matching tool based on intent keywords
+        q_lower = payload.query.lower()
+        if "quiz" in q_lower or "test" in q_lower:
+            from backend.agents.tools import generate_practice_quiz
+            res = generate_practice_quiz.invoke({"topic": payload.query, "num_questions": 3})
+            return {"status": "success", "agent_mode": "mock_tool", "output": res, "tool_used": "generate_practice_quiz"}
+        elif "schedule" in q_lower or "time" in q_lower or "plan" in q_lower:
+            from backend.agents.tools import schedule_study_session
+            res = schedule_study_session.invoke({"subject": payload.query})
+            return {"status": "success", "agent_mode": "mock_tool", "output": res, "tool_used": "schedule_study_session"}
+        elif "retention" in q_lower or "forget" in q_lower or "fatigue" in q_lower:
+            from backend.agents.tools import calculate_retention_risk
+            res = calculate_retention_risk.invoke({"score_pct": 75.0, "response_time_sec": 30.0})
+            return {"status": "success", "agent_mode": "mock_tool", "output": res, "tool_used": "calculate_retention_risk"}
+        else:
+            from backend.agents.tools import explain_concept
+            res = explain_concept.invoke({"concept": payload.query, "persona": "eli5"})
+            return {"status": "success", "agent_mode": "mock_tool", "output": res, "tool_used": "explain_concept"}
+
+    try:
+        inputs = {"messages": [("user", payload.query)]}
+        config = {"configurable": {"thread_id": active_thread}}
+        result = agent.invoke(inputs, config=config)
+        messages = result.get("messages", [])
+        last_msg = messages[-1].content if messages else "No response generated."
+        return {
+            "status": "success",
+            "agent_mode": "langgraph_react",
+            "output": last_msg,
+            "thread_id": active_thread,
+            "total_messages": len(messages),
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@router.get("/session-history")
+def get_student_session_history(thread_id: str):
+    """
+    Retrieves LangGraph state checkpoint history for a persistent student study thread (Course: Section 19).
+    """
+    from backend.agents.study_graph import get_session_history
+    history = get_session_history(thread_id=thread_id)
+    return {
+        "status": "success",
+        "thread_id": thread_id,
+        "checkpoint_count": len(history),
+        "checkpoints": history,
+    }
 
