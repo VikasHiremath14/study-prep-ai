@@ -195,7 +195,7 @@ $$r_t = \underbrace{\lambda_1 \cdot \Delta \text{Score}_{\text{immediate}}}_{\te
 To prevent students from cheating or searching solutions online:
 1. **Semantic Parameter Perturbation**: Extract logical invariants $\Phi(x, y) = \text{True}$.
 2. **Isomorphic Variable Morphing**: Transform entities, boundary values, and scenario contexts while maintaining identical logical complexity.
-3. **Formal Invariant Verification**: Run execution sandboxes / constraint solvers to prove the question has a unique, non-ambiguous answer before delivering it to the student.
+3. **Formal Invariant Verification**: Run execution sandboxes / constraint solvers to prove the question has a unique, non-ambiguous answer before delivering it .
 
 ---
 
