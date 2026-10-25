@@ -57,3 +57,8 @@ def root():
         "docs": "/docs",
         "version": settings.APP_VERSION
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("backend.app.main:app", host="0.0.0.0", port=settings.APP_PORT, reload=True)

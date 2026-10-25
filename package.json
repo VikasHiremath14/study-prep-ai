@@ -1,0 +1,14 @@
+{
+  "name": "study-prep-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous Multi-Agent AI Study System",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "start": "npm --prefix frontend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "backend": "cd backend && PYTHONPATH=.. .venv/bin/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "test": "cd backend && PYTHONPATH=.. .venv/bin/pytest tests/ -v"
+  }
+}
