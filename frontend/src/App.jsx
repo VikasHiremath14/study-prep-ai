@@ -695,7 +695,7 @@ export default function App() {
             }} />
 
             {/* Centered Auth Card */}
-            <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '460px' }}>
+            <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '520px' }}>
               <AuthPage onAuthenticate={handleAuthComplete} />
             </div>
           </div>
