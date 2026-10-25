@@ -4,7 +4,6 @@ import {
   Brain, 
   Calendar, 
   BookOpen, 
-  Target, 
   Award, 
   HelpCircle, 
   Trash2, 
@@ -272,7 +271,6 @@ export default function StudentRecordsModal({
             { id: 'forgetting_curve', label: '🧠 ML Forgetting Curve', icon: Sparkles },
             { id: 'timetable', label: 'Active Timetable', icon: Calendar },
             { id: 'notes', label: `Notes & Bookmarks (${localNotes.length})`, icon: BookOpen },
-            { id: 'targets', label: `Daily Targets (${localTargets.length})`, icon: Target },
             { id: 'quizzes', label: `Quiz History (${localQuizzes.length})`, icon: Award }
           ].map(tab => {
             const Icon = tab.icon;
@@ -828,82 +826,7 @@ export default function StudentRecordsModal({
             </div>
           )}
 
-          {/* TAB 4: DAILY TARGETS */}
-          {activeTab === 'targets' && (
-            <div>
-              {localTargets.length > 0 ? (
-                <div>
-                  <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                      Retention Scaled Syllabus Milestones:
-                    </span>
-                    <span style={{ fontSize: '0.74rem', color: '#34d399', fontWeight: 700 }}>
-                      ✓ {localTargets.filter(t => t.is_completed).length} of {localTargets.length} Days Mastered
-                    </span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {localTargets.map((t, idx) => (
-                      <div key={idx} style={{
-                        padding: '12px 16px',
-                        borderRadius: '10px',
-                        background: t.is_completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                        border: `1px solid ${t.is_completed ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-subtle)'}`,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '50%',
-                            background: t.is_completed ? '#10b981' : 'rgba(255,255,255,0.08)',
-                            color: t.is_completed ? '#030712' : '#ffffff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 800,
-                            fontSize: '0.76rem'
-                          }}>
-                            {t.is_completed ? <Check size={16} strokeWidth={3} /> : t.day_number}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#ffffff' }}>
-                              Day {t.day_number}: Pages {t.start_page} to {t.end_page} ({t.pages_count || 4} pages)
-                            </div>
-                            <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
-                              {t.subject || "Data Structures & Algorithmic Analysis"}
-                            </div>
-                          </div>
-                        </div>
-
-                        <span style={{
-                          fontSize: '0.74rem',
-                          fontWeight: 700,
-                          padding: '3px 10px',
-                          borderRadius: '999px',
-                          background: t.is_completed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.06)',
-                          color: t.is_completed ? '#34d399' : 'var(--text-dim)'
-                        }}>
-                          {t.is_completed ? '✓ Mastered & Quiz Passed' : 'In Progress'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '36px 0' }}>
-                  <Target size={36} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    No daily targets recorded yet. Upload syllabus material in Study Materials to generate daily milestones.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 5: QUIZZES */}
+          {/* TAB 4: QUIZZES */}
           {activeTab === 'quizzes' && (
             <div>
               {localQuizzes.length > 0 ? (
